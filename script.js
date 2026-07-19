@@ -89,6 +89,12 @@
     return haystack.includes(query);
   }
 
+  function extractOrSection(summary) {
+    const match = summary.match(/\bor:\s*/i);
+    if (!match) return summary;
+    return summary.slice(match.index).trim();
+  }
+
   function formatDate(iso) {
     const d = new Date(iso);
     return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
@@ -125,7 +131,7 @@
     }
 
     node.querySelector('.card-authors').textContent = entry.authors;
-    node.querySelector('.card-summary').textContent = entry.summary;
+    node.querySelector('.card-summary').textContent = extractOrSection(entry.summary);
 
     const tagsWrap = node.querySelector('.card-tags');
     entry.tags.forEach(tag => tagsWrap.appendChild(buildPill(entry.id, tag)));

@@ -15,6 +15,21 @@
 
 * { box-sizing: border-box; }
 
+html {
+  background: var(--bg);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top, 0px);
+  background: var(--bg);
+  z-index: 20;
+}
+
 body {
   margin: 0;
   background: var(--bg);
@@ -80,7 +95,7 @@ main {
   position: sticky;
   top: 0;
   background: var(--bg);
-  z-index: 5;
+  z-index: 21;
   padding: 1rem 0;
   margin-bottom: 0.5rem;
 }
