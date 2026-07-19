@@ -13,6 +13,25 @@
   --font-body: 'Inter', system-ui, sans-serif;
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #221720;
+    --surface: #2C1E2A;
+    --ink: #F1E4E9;
+    --ink-soft: #C4AAB6;
+    --rose: #E39CB2;
+    --rose-deep: #E8A5BB;
+    --gold: #E0B872;
+    --coral: #F0846C;
+    --rule: #4A3542;
+  }
+
+  .pill {
+    background: #4A3B22;
+    color: #E0B872;
+  }
+}
+
 * { box-sizing: border-box; }
 
 html {
