@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>the stacks — a TBR catalog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <p class="eyebrow">reader's ledger</p>
+    <h1>the stacks</h1>
+    <p class="tagline">a catalog of fics you've meant to get to</p>
+  </div>
+  <div class="masthead-count" id="entryCount">0 cards on file</div>
+</header>
+
+<main>
+  <section class="controls">
+    <div class="search-row">
+      <input type="search" id="searchInput" placeholder="search title or author…" autocomplete="off">
+    </div>
+    <div class="tag-rail" id="tagRail">
+      <!-- tag filter chips injected here -->
+    </div>
+  </section>
+
+  <section id="cardGrid" class="card-grid">
+    <!-- fic cards injected here -->
+  </section>
+
+  <div id="emptyState" class="empty-state" hidden>
+    <p class="empty-title">the drawer's empty</p>
+    <p class="empty-body">Tap "Info" on an AO3 work page to file it here, or add one below.</p>
+  </div>
+</main>
+
+<button id="addManualBtn" class="fab" title="Add a fic manually">+</button>
+
+<dialog id="addDialog">
+  <form method="dialog" id="addForm">
+    <h2>File a new card</h2>
+    <label>Title <input type="text" id="f_title" required></label>
+    <label>URL <input type="url" id="f_url"></label>
+    <label>Author(s) <input type="text" id="f_authors"></label>
+    <label>Summary <textarea id="f_summary" rows="4"></textarea></label>
+    <label>Tags <input type="text" id="f_tags" placeholder="comma, separated, tags"></label>
+    <div class="dialog-actions">
+      <button type="button" id="cancelAdd" class="btn-ghost">Cancel</button>
+      <button type="submit" class="btn-solid">File it</button>
+    </div>
+  </form>
+</dialog>
+
+<template id="cardTemplate">
+  <article class="card">
+    <div class="card-stub">
+      <span class="stub-date"></span>
+      <button class="stub-remove" title="Remove from stacks">✕</button>
+    </div>
+    <h3 class="card-title"><a target="_blank" rel="noopener"></a></h3>
+    <p class="card-byline">by <span class="card-authors"></span></p>
+    <p class="card-summary"></p>
+    <div class="card-rule"></div>
+    <div class="card-tags"></div>
+    <div class="card-tag-add">
+      <input type="text" class="tag-input" placeholder="+ add tag">
+    </div>
+  </article>
+</template>
+
+<script src="js/script.js"></script>
+</body>
+</html>
