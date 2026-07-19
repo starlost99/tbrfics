@@ -192,8 +192,6 @@ main {
   color: var(--ink-soft);
   line-height: 1.5;
   margin: 0;
-  max-height: 6.5em;
-  overflow: hidden;
 }
 
 .card-rule {
