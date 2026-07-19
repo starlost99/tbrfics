@@ -92,10 +92,6 @@ main {
 }
 
 .controls {
-  position: sticky;
-  top: 0;
-  background: var(--bg);
-  z-index: 21;
   padding: 1rem 0;
   margin-bottom: 0.5rem;
 }
@@ -283,6 +279,31 @@ main {
   box-shadow: 0 3px 10px rgba(59,38,53,0.3);
 }
 .fab:hover { background: var(--ink); }
+
+.to-top {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 1.5rem;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(59,38,53,0.2);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 0.15s, transform 0.15s;
+}
+.to-top.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
 
 dialog {
   border: 1.5px solid var(--ink);

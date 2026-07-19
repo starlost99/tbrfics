@@ -90,7 +90,7 @@
   }
 
   function extractOrSection(summary) {
-    const match = summary.match(/\bor:\s*/i);
+    const match = summary.match(/\bor[:,\-–—]\s*/i);
     if (!match) return summary;
     return summary.slice(match.index).trim();
   }
@@ -208,6 +208,15 @@
     saveEntries();
     document.getElementById('addForm').reset();
     render();
+  });
+
+  // ---- Scroll to top ----
+  const toTopBtn = document.getElementById('toTopBtn');
+  window.addEventListener('scroll', () => {
+    toTopBtn.classList.toggle('visible', window.scrollY > 400);
+  });
+  toTopBtn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
   // ---- Init ----
