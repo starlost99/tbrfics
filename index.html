@@ -39,6 +39,8 @@
   </div>
 </main>
 
+<datalist id="tagList"></datalist>
+
 <button id="addManualBtn" class="fab" title="Add a fic manually">+</button>
 <button id="toTopBtn" class="to-top" title="Back to top">↑</button>
 
@@ -49,7 +51,7 @@
     <label>URL <input type="url" id="f_url"></label>
     <label>Author(s) <input type="text" id="f_authors"></label>
     <label>Summary <textarea id="f_summary" rows="4"></textarea></label>
-    <label>Tags <input type="text" id="f_tags" placeholder="comma, separated, tags"></label>
+    <label>Tags <input type="text" id="f_tags" list="tagList" placeholder="comma, separated, tags"></label>
     <div class="dialog-actions">
       <button type="button" id="cancelAdd" class="btn-ghost">Cancel</button>
       <button type="submit" class="btn-solid">File it</button>
@@ -69,7 +71,7 @@
     <div class="card-rule"></div>
     <div class="card-tags"></div>
     <div class="card-tag-add">
-      <input type="text" class="tag-input" placeholder="+ add tag">
+      <input type="text" class="tag-input" list="tagList" placeholder="+ add tag">
     </div>
   </article>
 </template>

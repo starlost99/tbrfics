@@ -67,6 +67,16 @@
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }
 
+  function renderTagDatalist() {
+    const list = document.getElementById('tagList');
+    list.innerHTML = '';
+    allTags().forEach(tag => {
+      const opt = document.createElement('option');
+      opt.value = tag;
+      list.appendChild(opt);
+    });
+  }
+
   function renderTagRail() {
     tagRail.innerHTML = '';
     allTags().forEach(tag => {
@@ -110,6 +120,7 @@
     emptyState.hidden = entries.length !== 0;
     entryCount.textContent = `${entries.length} card${entries.length === 1 ? '' : 's'} on file`;
     renderTagRail();
+    renderTagDatalist();
   }
 
   function buildCard(entry) {
