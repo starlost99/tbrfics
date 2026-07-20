@@ -33,6 +33,8 @@
     const summary = params.get('summary') || '';
     const tagsParam = params.get('tags');
     const tags = tagsParam ? tagsParam.split(',').map(t => t.trim()).filter(Boolean) : [];
+    const aoTagsParam = params.get('aoTags');
+    const aoTags = aoTagsParam ? aoTagsParam.split(',').map(t => t.trim()).filter(Boolean) : [];
 
     const dupe = url && entries.find(e => e.url === url);
     if (!dupe) {
@@ -43,6 +45,7 @@
         authors,
         summary,
         tags,
+        aoTags,
         dateAdded: new Date().toISOString(),
       });
       saveEntries();
@@ -147,16 +150,72 @@
     const tagsWrap = node.querySelector('.card-tags');
     entry.tags.forEach(tag => tagsWrap.appendChild(buildPill(entry.id, tag)));
 
+    setupTagInput(node, entry);
+    setupAoTags(node, entry);
+
+    return node;
+  }
+
+  function setupTagInput(node, entry) {
     const tagInput = node.querySelector('.tag-input');
+    const suggestBox = node.querySelector('.tag-suggestions');
+
+    function closeSuggestions() {
+      suggestBox.classList.remove('visible');
+      suggestBox.innerHTML = '';
+    }
+
+    function showSuggestions() {
+      const query = tagInput.value.trim().toLowerCase();
+      const candidates = allTags().filter(
+        t => !entry.tags.includes(t) && (!query || t.toLowerCase().includes(query))
+      );
+      if (candidates.length === 0) { closeSuggestions(); return; }
+
+      suggestBox.innerHTML = '';
+      candidates.slice(0, 6).forEach(tag => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = tag;
+        // mousedown fires before the input's blur, so the click registers
+        btn.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          addTag(entry.id, tag);
+          tagInput.value = '';
+          closeSuggestions();
+        });
+        suggestBox.appendChild(btn);
+      });
+      suggestBox.classList.add('visible');
+    }
+
+    tagInput.addEventListener('focus', showSuggestions);
+    tagInput.addEventListener('input', showSuggestions);
+    tagInput.addEventListener('blur', () => setTimeout(closeSuggestions, 100));
     tagInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
         addTag(entry.id, tagInput.value);
         tagInput.value = '';
+        closeSuggestions();
       }
     });
+  }
 
-    return node;
+  function setupAoTags(node, entry) {
+    const details = node.querySelector('.ao-tags');
+    const list = node.querySelector('.ao-tags-list');
+    const aoTags = entry.aoTags || [];
+    if (aoTags.length === 0) {
+      details.remove();
+      return;
+    }
+    aoTags.forEach(tag => {
+      const pill = document.createElement('span');
+      pill.className = 'pill-ao';
+      pill.textContent = tag;
+      list.appendChild(pill);
+    });
   }
 
   function buildPill(entryId, tag) {

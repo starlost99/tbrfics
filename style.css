@@ -256,6 +256,10 @@ main {
   line-height: 1;
 }
 
+.card-tag-add {
+  position: relative;
+}
+
 .tag-input {
   width: 100%;
   border: none;
@@ -267,6 +271,63 @@ main {
   font-family: var(--font-body);
 }
 .tag-input:focus-visible { outline: none; border-bottom-color: var(--rose-deep); }
+
+.tag-suggestions {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  margin-top: 0.2rem;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+  z-index: 10;
+  overflow: hidden;
+  display: none;
+}
+.tag-suggestions.visible { display: block; }
+
+.tag-suggestions button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.45rem 0.65rem;
+  border: none;
+  background: none;
+  font-size: 0.8rem;
+  color: var(--ink);
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+.tag-suggestions button:hover,
+.tag-suggestions button:active {
+  background: var(--bg);
+}
+
+.ao-tags {
+  margin-top: 0.7rem;
+}
+.ao-tags summary {
+  font-size: 0.7rem;
+  color: var(--ink-soft);
+  cursor: pointer;
+  letter-spacing: 0.03em;
+}
+.ao-tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+}
+.pill-ao {
+  font-size: 0.68rem;
+  background: transparent;
+  color: var(--ink-soft);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 0.18rem 0.5rem;
+}
 
 .empty-state {
   text-align: center;

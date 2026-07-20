@@ -71,8 +71,13 @@
     <div class="card-rule"></div>
     <div class="card-tags"></div>
     <div class="card-tag-add">
-      <input type="text" class="tag-input" list="tagList" placeholder="+ add tag">
+      <input type="text" class="tag-input" placeholder="+ add tag" autocomplete="off">
+      <div class="tag-suggestions"></div>
     </div>
+    <details class="ao-tags">
+      <summary>original AO3 tags</summary>
+      <div class="ao-tags-list"></div>
+    </details>
   </article>
 </template>
 
