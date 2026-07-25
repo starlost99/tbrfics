@@ -297,18 +297,21 @@ main {
 .data-actions {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.3rem;
 }
-.btn-data {
-  font-size: 0.72rem;
-  padding: 0.35rem 0.6rem;
-  border-color: transparent;
+.btn-ghost.btn-data {
+  font-size: 0.68rem;
+  font-weight: 500;
+  padding: 0.15rem 0.3rem;
+  border: none;
   color: var(--ink-soft);
+  opacity: 0.6;
   background: none;
 }
-.btn-data:hover {
-  border-color: var(--rule);
+.btn-ghost.btn-data:hover {
+  opacity: 1;
   color: var(--ink);
+  text-decoration: underline;
 }
 .view-tab {
   border: none;
@@ -458,12 +461,21 @@ main {
 }
 .shelf-actions {
   display: flex;
-  gap: 0.3rem;
+  gap: 0.2rem;
   margin-left: auto;
 }
-.shelf-action-btn {
-  font-size: 0.66rem;
-  padding: 0.22rem 0.5rem;
+.shelf-action-btn.btn-ghost {
+  font-size: 0.62rem;
+  font-weight: 500;
+  padding: 0.12rem 0.3rem;
+  border: none;
+  opacity: 0.6;
+  background: none;
+}
+.shelf-action-btn.btn-ghost:hover {
+  opacity: 1;
+  color: var(--ink);
+  text-decoration: underline;
 }
 
 .shelf-color-row {
