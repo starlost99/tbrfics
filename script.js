@@ -561,6 +561,15 @@
     return n.toLocaleString() + (n === 1 ? ' word' : ' words');
   }
 
+  // Reading time at 215 wpm — a commonly cited average adult silent
+  // reading speed, used elsewhere for this kind of estimate.
+  const READING_WPM = 215;
+  function formatReadTime(words) {
+    if (!words) return '';
+    const minutes = Math.max(1, Math.round(words / READING_WPM));
+    return minutes === 1 ? '1 min read' : `${minutes} min read`;
+  }
+
   function formatCount(n) {
     if (n === null || n === undefined || isNaN(n)) return '';
     return n.toLocaleString();
@@ -842,6 +851,13 @@
     if (wordsText) {
       const span = document.createElement('span');
       span.textContent = wordsText;
+      meta.appendChild(span);
+    }
+
+    const readTimeText = formatReadTime(entry.words);
+    if (readTimeText) {
+      const span = document.createElement('span');
+      span.textContent = readTimeText;
       meta.appendChild(span);
     }
 
@@ -1162,6 +1178,14 @@
       const badge = document.createElement('span');
       badge.className = 'badge badge-words';
       badge.textContent = wordsText;
+      wrap.appendChild(badge);
+    }
+
+    const readTimeText = formatReadTime(entry.words);
+    if (readTimeText) {
+      const badge = document.createElement('span');
+      badge.className = 'badge badge-readtime';
+      badge.textContent = readTimeText;
       wrap.appendChild(badge);
     }
 
@@ -1509,6 +1533,8 @@
     meta.className = 'book-meta';
     const metaBits = [];
     if (entry.words) metaBits.push(formatWords(entry.words));
+    const readTimeText = formatReadTime(entry.words);
+    if (readTimeText) metaBits.push(readTimeText);
     if (entry.stars) metaBits.push('★'.repeat(Math.round(entry.stars)));
     meta.textContent = metaBits.join(' · ');
     cover.appendChild(meta);

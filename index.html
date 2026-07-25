@@ -21,15 +21,15 @@
 
 <main>
   <div class="toolbar-row">
-    <div class="view-tabs" role="tablist">
-      <button type="button" class="view-tab active" data-view="catalog" role="tab" aria-selected="true">Catalog</button>
-      <button type="button" class="view-tab" data-view="shelves" role="tab" aria-selected="false">Shelves</button>
-      <button type="button" class="view-tab" data-view="library" role="tab" aria-selected="false">Library</button>
-    </div>
     <div class="data-actions">
       <button type="button" id="exportBtn" class="btn-ghost btn-data" title="Download your cards and shelves as a JSON file">Export</button>
       <button type="button" id="importBtn" class="btn-ghost btn-data" title="Load cards and shelves from a JSON file">Import</button>
       <input type="file" id="importInput" accept="application/json" hidden>
+    </div>
+    <div class="view-tabs" role="tablist">
+      <button type="button" class="view-tab active" data-view="catalog" role="tab" aria-selected="true">Catalog</button>
+      <button type="button" class="view-tab" data-view="shelves" role="tab" aria-selected="false">Shelves</button>
+      <button type="button" class="view-tab" data-view="library" role="tab" aria-selected="false">Library</button>
     </div>
   </div>
 
