@@ -481,6 +481,47 @@ main {
   margin-bottom: 0.65rem;
 }
 
+.card-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.6rem;
+}
+.star-rating {
+  position: relative;
+  display: inline-block;
+  font-size: 1.15rem;
+  line-height: 1;
+  letter-spacing: 2px;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 2px;
+}
+.star-row {
+  white-space: nowrap;
+}
+.star-row-bg {
+  color: var(--rule);
+}
+.star-row-fg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0%;
+  overflow: hidden;
+  color: var(--gold);
+  pointer-events: none;
+}
+.star-rating:focus-visible {
+  outline: 2px solid var(--rose-deep);
+  outline-offset: 2px;
+}
+.star-value {
+  font-size: 0.7rem;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
 .badge {
   font-size: 0.68rem;
   font-weight: 600;

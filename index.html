@@ -48,6 +48,11 @@
           </div>
 
           <div class="filter-group">
+            <p class="filter-label">Your rating</p>
+            <div class="chip-row" id="starRail"></div>
+          </div>
+
+          <div class="filter-group">
             <p class="filter-label">Word count</p>
             <div class="range-row">
               <input type="number" id="wordMinInput" placeholder="min" min="0" inputmode="numeric">
@@ -119,6 +124,13 @@
     </div>
     <h3 class="card-title"><a target="_blank" rel="noopener"></a></h3>
     <p class="card-byline">by <span class="card-authors"></span></p>
+    <div class="card-rating">
+      <div class="star-rating" tabindex="0" role="slider" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0" aria-label="Your rating">
+        <div class="star-row star-row-bg">★★★★★</div>
+        <div class="star-row star-row-fg">★★★★★</div>
+      </div>
+      <span class="star-value"></span>
+    </div>
     <div class="card-badges"></div>
     <p class="card-summary"></p>
     <div class="card-rule"></div>

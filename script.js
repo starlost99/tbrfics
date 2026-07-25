@@ -10,6 +10,7 @@
   let activeTags = new Set();      // your own custom tags — OR match
   let activeRatings = new Set();   // AO3 rating — OR match
   let statusFilter = 'all';        // 'all' | 'complete' | 'wip'
+  let starFilter = 0;              // 0 = no filter, else "at least N stars"
   let wordMin = null;
   let wordMax = null;
   let activeAoTags = new Set();    // fandom/relationship/character/freeform — AND match
@@ -100,6 +101,7 @@
         tags,
         notes: '',
         shelf: null,
+        stars: null,
         rating,
         warnings,
         category,
@@ -130,6 +132,7 @@
   const searchInput = document.getElementById('searchInput');
   const ratingRail = document.getElementById('ratingRail');
   const statusRail = document.getElementById('statusRail');
+  const starRail = document.getElementById('starRail');
   const wordMinInput = document.getElementById('wordMinInput');
   const wordMaxInput = document.getElementById('wordMaxInput');
   const aoTagSearch = document.getElementById('aoTagSearch');
@@ -170,6 +173,7 @@
     activeRatings.clear();
     activeAoTags.clear();
     statusFilter = 'all';
+    starFilter = 0;
     wordMin = null;
     wordMax = null;
     wordMinInput.value = '';
@@ -261,6 +265,22 @@
     });
   }
 
+  function renderStarFilterRail() {
+    starRail.innerHTML = '';
+    [1, 2, 3, 4, 5].forEach(n => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'tag-chip' + (starFilter === n ? ' active' : '');
+      chip.textContent = '★'.repeat(n) + '+';
+      chip.title = `${n} star${n === 1 ? '' : 's'} and up`;
+      chip.addEventListener('click', () => {
+        starFilter = starFilter === n ? 0 : n;
+        render();
+      });
+      starRail.appendChild(chip);
+    });
+  }
+
   function renderAoTagRail() {
     aoTagRail.innerHTML = '';
     const query = aoTagQuery.trim().toLowerCase();
@@ -293,6 +313,7 @@
   function activeFilterCount() {
     return activeTags.size + activeRatings.size + activeAoTags.size +
       (statusFilter !== 'all' ? 1 : 0) +
+      (starFilter > 0 ? 1 : 0) +
       (wordMin !== null ? 1 : 0) +
       (wordMax !== null ? 1 : 0);
   }
@@ -313,6 +334,8 @@
 
     if (statusFilter === 'complete' && entry.complete !== true) return false;
     if (statusFilter === 'wip' && entry.complete !== false) return false;
+
+    if (starFilter > 0 && (entry.stars || 0) < starFilter) return false;
 
     if (wordMin !== null && (entry.words === null || entry.words === undefined || entry.words < wordMin)) return false;
     if (wordMax !== null && (entry.words === null || entry.words === undefined || entry.words > wordMax)) return false;
@@ -373,6 +396,7 @@
     renderTagDatalist();
     renderRatingRail();
     renderStatusRail();
+    renderStarFilterRail();
     renderAoTagRail();
     renderFilterCount();
 
@@ -567,9 +591,55 @@
     setupTagInput(node, entry);
     setupNotes(node, entry);
     setupShelfSelect(node, entry);
+    setupStarRating(node, entry);
     setupAoTags(node, entry);
 
     return node;
+  }
+
+  // 5-star widget with half-star precision. Click position along the row
+  // decides the value (snapped to the nearest 0.5); clicking the exact
+  // current rating again clears it back to unrated.
+  function setupStarRating(node, entry) {
+    const widget = node.querySelector('.star-rating');
+    const fg = node.querySelector('.star-row-fg');
+    const valueLabel = node.querySelector('.star-value');
+
+    function paint() {
+      const stars = entry.stars || 0;
+      fg.style.width = (stars / 5 * 100) + '%';
+      widget.setAttribute('aria-valuenow', String(stars));
+      valueLabel.textContent = stars ? `${stars}★` : 'unrated';
+    }
+    paint();
+
+    function valueFromClientX(clientX) {
+      const rect = widget.getBoundingClientRect();
+      const fraction = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      return Math.round(fraction * 10) / 2; // snap to nearest 0.5 across 0–5
+    }
+
+    function setStars(value) {
+      entry.stars = value || null;
+      saveEntries();
+      render();
+    }
+
+    widget.addEventListener('click', (e) => {
+      const val = valueFromClientX(e.clientX);
+      setStars(val === (entry.stars || 0) ? 0 : val);
+    });
+
+    widget.addEventListener('keydown', (e) => {
+      let stars = entry.stars || 0;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowUp') stars = Math.min(5, stars + 0.5);
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') stars = Math.max(0, stars - 0.5);
+      else if (e.key === 'Home') stars = 0;
+      else if (e.key === 'End') stars = 5;
+      else return;
+      e.preventDefault();
+      setStars(stars);
+    });
   }
 
   // Lets a card be moved onto a shelf (or back to Unshelved) from wherever it's shown
@@ -830,6 +900,7 @@
     activeRatings.clear();
     activeAoTags.clear();
     statusFilter = 'all';
+    starFilter = 0;
     wordMin = null;
     wordMax = null;
     wordMinInput.value = '';
@@ -855,6 +926,7 @@
       tags: document.getElementById('f_tags').value.split(',').map(t => t.trim()).filter(Boolean),
       notes: '',
       shelf: null,
+      stars: null,
       rating: [],
       warnings: [],
       category: [],
