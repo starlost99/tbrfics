@@ -1,6 +1,13 @@
 (function () {
   'use strict';
 
+  // Point this at your deployed Cloudflare Worker (see worker.js) to enable
+  // one-tap refreshing. Leave blank and the refresh button just opens the
+  // fic on AO3 instead, so you can re-tap "Info" there.
+  const CONFIG = {
+    refreshApiUrl: '', // e.g. 'https://tbr-refresh.YOUR-NAME.workers.dev'
+  };
+
   const STORE_KEY = 'tbr-stacks-v1';
   const SHELVES_STORE_KEY = 'tbr-stacks-shelves-v1';
   let entries = loadEntries();
@@ -18,12 +25,14 @@
 
   // ---- View state ----
   let view = 'catalog';   // 'catalog' | 'shelves'
-  let activeShelf = null; // 'unshelved' | a shelf name | null (nothing pulled down yet)
+  let openShelves = new Set(); // keys ('unshelved' | shelf name) currently unrolled — any number at once
 
   function loadEntries() {
     try {
       const raw = localStorage.getItem(STORE_KEY);
-      return raw ? JSON.parse(raw) : [];
+      const parsed = raw ? JSON.parse(raw) : [];
+      parsed.forEach(migrateShelfField);
+      return parsed;
     } catch (e) {
       return [];
     }
@@ -46,9 +55,19 @@
     localStorage.setItem(SHELVES_STORE_KEY, JSON.stringify(shelves));
   }
 
-  // A fic with no shelf assignment lives on the always-present "unshelved" shelf
-  function entryShelf(entry) {
-    return entry.shelf || 'unshelved';
+  // A fic can now live on any number of shelves — [] means unshelved.
+  // Older cards used a single `shelf` string; migrateShelfField upgrades
+  // those in place the first time they're loaded or imported.
+  function entryShelves(entry) {
+    return entry.shelves || [];
+  }
+
+  function migrateShelfField(entry) {
+    if (!Array.isArray(entry.shelves)) {
+      entry.shelves = entry.shelf ? [entry.shelf] : [];
+    }
+    delete entry.shelf;
+    return entry;
   }
 
   function uid() {
@@ -100,7 +119,7 @@
         summary,
         tags,
         notes: '',
-        shelf: null,
+        shelves: [],
         stars: null,
         rating,
         warnings,
@@ -173,8 +192,7 @@
   const viewTabs = document.querySelectorAll('.view-tab');
   const catalogView = document.getElementById('catalogView');
   const shelvesView = document.getElementById('shelvesView');
-  const bookshelfRail = document.getElementById('bookshelfRail');
-  const shelfContents = document.getElementById('shelfContents');
+  const shelfPillbox = document.getElementById('shelfPillbox');
 
   const SPINE_PALETTE = ['var(--rose-deep)', 'var(--gold)', '#6E9B6E', '#5C8DBF', 'var(--coral)', 'var(--ink)'];
 
@@ -430,126 +448,197 @@
     renderAoTagRail();
     renderFilterCount();
 
-    renderBookshelf();
-    if (view === 'shelves') renderShelfContents();
+    renderShelfPills();
   }
 
   // ---- Shelves view ----
+  // Each shelf is an "unrollable" pill: tap it to expand/collapse a compact
+  // list of its fics inline. Any number can be open at once.
 
-  function spineWidth(key) {
-    return 30 + (hashString(key) % 5) * 4; // 30–46px, stable per shelf name
-  }
-
-  function renderBookshelf() {
-    if (!bookshelfRail) return;
-    bookshelfRail.innerHTML = '';
+  function renderShelfPills() {
+    if (!shelfPillbox) return;
+    shelfPillbox.innerHTML = '';
 
     const items = [{ key: 'unshelved', label: 'Unshelved', special: true }]
       .concat(shelves.map(name => ({ key: name, label: name })));
 
     items.forEach(item => {
-      const count = entries.filter(e => entryShelf(e) === item.key).length;
+      const list = item.special
+        ? entries.filter(e => entryShelves(e).length === 0)
+        : entries.filter(e => entryShelves(e).includes(item.key));
+      const isOpen = openShelves.has(item.key);
 
-      const spine = document.createElement('button');
-      spine.type = 'button';
-      spine.className = 'spine' + (item.special ? ' spine-unshelved' : '') + (activeShelf === item.key ? ' active' : '');
+      const group = document.createElement('div');
+      group.className = 'shelf-pill-group' + (isOpen ? ' open' : '');
+
+      const pill = document.createElement('button');
+      pill.type = 'button';
+      pill.className = 'shelf-pill' + (item.special ? ' shelf-pill-unshelved' : '') + (isOpen ? ' active' : '');
       if (!item.special) {
-        spine.style.background = SPINE_PALETTE[hashString(item.key) % SPINE_PALETTE.length];
+        pill.style.setProperty('--pill-accent', SPINE_PALETTE[hashString(item.key) % SPINE_PALETTE.length]);
       }
-      spine.style.setProperty('--spine-w', spineWidth(item.key) + 'px');
-      spine.title = `${item.label} (${count})`;
-      spine.addEventListener('click', () => {
-        activeShelf = item.key;
-        renderBookshelf();
-        renderShelfContents();
-      });
+      pill.setAttribute('aria-expanded', String(isOpen));
 
       const label = document.createElement('span');
-      label.className = 'spine-label';
+      label.className = 'shelf-pill-label';
       label.textContent = item.label;
-      spine.appendChild(label);
+      pill.appendChild(label);
 
-      const badge = document.createElement('span');
-      badge.className = 'spine-count';
-      badge.textContent = String(count);
-      spine.appendChild(badge);
+      const count = document.createElement('span');
+      count.className = 'shelf-pill-count';
+      count.textContent = String(list.length);
+      pill.appendChild(count);
 
-      bookshelfRail.appendChild(spine);
+      const chevron = document.createElement('span');
+      chevron.className = 'shelf-pill-chevron';
+      chevron.setAttribute('aria-hidden', 'true');
+      chevron.textContent = '⌄';
+      pill.appendChild(chevron);
+
+      pill.addEventListener('click', () => {
+        if (openShelves.has(item.key)) openShelves.delete(item.key);
+        else openShelves.add(item.key);
+        renderShelfPills();
+      });
+
+      group.appendChild(pill);
+
+      const panel = document.createElement('div');
+      panel.className = 'shelf-panel';
+      const inner = document.createElement('div');
+      inner.className = 'shelf-panel-inner';
+
+      if (isOpen) {
+        if (!item.special) {
+          const actions = document.createElement('div');
+          actions.className = 'shelf-panel-actions';
+
+          const renameBtn = document.createElement('button');
+          renameBtn.type = 'button';
+          renameBtn.className = 'btn-ghost shelf-action-btn';
+          renameBtn.textContent = 'Rename';
+          renameBtn.addEventListener('click', () => renameShelf(item.key));
+
+          const deleteBtn = document.createElement('button');
+          deleteBtn.type = 'button';
+          deleteBtn.className = 'btn-ghost shelf-action-btn';
+          deleteBtn.textContent = 'Delete';
+          deleteBtn.addEventListener('click', () => deleteShelf(item.key));
+
+          actions.appendChild(renameBtn);
+          actions.appendChild(deleteBtn);
+          inner.appendChild(actions);
+        }
+
+        if (list.length === 0) {
+          const empty = document.createElement('p');
+          empty.className = 'shelf-hint';
+          empty.textContent = item.special
+            ? 'Nothing unshelved — everything has a home.'
+            : 'Nothing filed here yet — use a card\'s shelf picker to add one.';
+          inner.appendChild(empty);
+        } else {
+          const rowList = document.createElement('div');
+          rowList.className = 'shelf-row-list';
+          list.forEach(entry => rowList.appendChild(buildShelfRow(entry)));
+          inner.appendChild(rowList);
+        }
+      }
+
+      panel.appendChild(inner);
+      group.appendChild(panel);
+      shelfPillbox.appendChild(group);
     });
 
-    const addSpine = document.createElement('button');
-    addSpine.type = 'button';
-    addSpine.className = 'spine spine-add';
-    addSpine.title = 'Add a new shelf';
-    addSpine.textContent = '+';
-    addSpine.addEventListener('click', addShelf);
-    bookshelfRail.appendChild(addSpine);
+    const addPill = document.createElement('button');
+    addPill.type = 'button';
+    addPill.className = 'shelf-pill shelf-pill-add';
+    addPill.textContent = '+ new shelf';
+    addPill.addEventListener('click', addShelf);
+    shelfPillbox.appendChild(addPill);
   }
 
-  function renderShelfContents() {
-    if (!shelfContents) return;
-    shelfContents.innerHTML = '';
+  // Compact row for a fic inside an unrolled shelf pill — lighter than the
+  // full catalog card (no tag editor, notes, or shelf picker), just enough
+  // to identify and jump to the fic.
+  function buildShelfRow(entry) {
+    const row = document.createElement('div');
+    row.className = 'shelf-row';
 
-    if (!activeShelf) {
-      const hint = document.createElement('p');
-      hint.className = 'shelf-hint';
-      hint.textContent = 'Tap a spine to pull that shelf down.';
-      shelfContents.appendChild(hint);
-      return;
+    const hasUrl = !!entry.url;
+    const thumb = document.createElement(hasUrl ? 'a' : 'span');
+    thumb.className = 'shelf-row-thumb';
+    if (hasUrl) {
+      thumb.href = entry.url;
+      thumb.target = '_blank';
+      thumb.rel = 'noopener';
+    }
+    thumb.style.background = SPINE_PALETTE[hashString(entry.title || entry.id) % SPINE_PALETTE.length];
+    thumb.textContent = (entry.title || '?').trim().charAt(0).toUpperCase();
+    row.appendChild(thumb);
+
+    const main = document.createElement('div');
+    main.className = 'shelf-row-main';
+
+    const top = document.createElement('div');
+    top.className = 'shelf-row-top';
+
+    const title = document.createElement('a');
+    title.className = 'shelf-row-title';
+    title.textContent = entry.title;
+    if (hasUrl) {
+      title.href = entry.url;
+      title.target = '_blank';
+      title.rel = 'noopener';
+    } else {
+      title.removeAttribute('href');
+      title.style.pointerEvents = 'none';
+    }
+    top.appendChild(title);
+
+    const rating = (entry.rating && entry.rating[0]) || '';
+    if (rating) {
+      const chip = document.createElement('span');
+      chip.className = `shelf-row-rating badge badge-rating-${ratingClass(rating)}`;
+      chip.textContent = rating;
+      top.appendChild(chip);
+    }
+    main.appendChild(top);
+
+    const byline = document.createElement('p');
+    byline.className = 'shelf-row-byline';
+    byline.textContent = `by ${entry.authors || 'Anonymous'}`;
+    main.appendChild(byline);
+
+    const meta = document.createElement('div');
+    meta.className = 'shelf-row-meta';
+
+    const wordsText = formatWords(entry.words);
+    if (wordsText) {
+      const span = document.createElement('span');
+      span.textContent = `${wordsText} words`;
+      meta.appendChild(span);
     }
 
-    const isUnshelved = activeShelf === 'unshelved';
-    const list = entries.filter(e => entryShelf(e) === activeShelf);
-
-    const header = document.createElement('div');
-    header.className = 'shelf-header';
-
-    const heading = document.createElement('h2');
-    heading.textContent = isUnshelved ? 'Unshelved' : activeShelf;
-    header.appendChild(heading);
-
-    const count = document.createElement('span');
-    count.className = 'shelf-count';
-    count.textContent = `${list.length} card${list.length === 1 ? '' : 's'}`;
-    header.appendChild(count);
-
-    if (!isUnshelved) {
-      const actions = document.createElement('div');
-      actions.className = 'shelf-actions';
-
-      const renameBtn = document.createElement('button');
-      renameBtn.type = 'button';
-      renameBtn.className = 'btn-ghost shelf-action-btn';
-      renameBtn.textContent = 'Rename';
-      renameBtn.addEventListener('click', () => renameShelf(activeShelf));
-
-      const deleteBtn = document.createElement('button');
-      deleteBtn.type = 'button';
-      deleteBtn.className = 'btn-ghost shelf-action-btn';
-      deleteBtn.textContent = 'Delete';
-      deleteBtn.addEventListener('click', () => deleteShelf(activeShelf));
-
-      actions.appendChild(renameBtn);
-      actions.appendChild(deleteBtn);
-      header.appendChild(actions);
+    if (entry.chapters) {
+      const span = document.createElement('span');
+      if (entry.complete) span.className = 'shelf-row-complete';
+      span.textContent = entry.complete ? `${entry.chapters} · complete` : entry.chapters;
+      meta.appendChild(span);
     }
 
-    shelfContents.appendChild(header);
-
-    if (list.length === 0) {
-      const empty = document.createElement('p');
-      empty.className = 'shelf-hint';
-      empty.textContent = isUnshelved
-        ? 'Nothing unshelved — everything has a home.'
-        : 'Nothing filed here yet — use a card\'s shelf picker to add one.';
-      shelfContents.appendChild(empty);
-      return;
+    if (entry.stars) {
+      const span = document.createElement('span');
+      span.className = 'shelf-row-stars';
+      const full = Math.floor(entry.stars);
+      const half = entry.stars % 1 !== 0;
+      span.textContent = '★'.repeat(full) + (half ? '½' : '') + ` ${entry.stars}`;
+      meta.appendChild(span);
     }
 
-    const grid = document.createElement('div');
-    grid.className = 'card-grid';
-    list.forEach(entry => grid.appendChild(buildCard(entry)));
-    shelfContents.appendChild(grid);
+    if (meta.children.length) main.appendChild(meta);
+    row.appendChild(main);
+    return row;
   }
 
   function addShelf() {
@@ -561,7 +650,7 @@
       shelves.push(trimmed);
       saveShelves();
     }
-    activeShelf = trimmed;
+    openShelves.add(trimmed);
     render();
   }
 
@@ -575,20 +664,26 @@
       return;
     }
     shelves = shelves.map(s => (s === oldName ? trimmed : s));
-    entries.forEach(e => { if (e.shelf === oldName) e.shelf = trimmed; });
+    entries.forEach(e => {
+      const idx = entryShelves(e).indexOf(oldName);
+      if (idx !== -1) e.shelves[idx] = trimmed;
+    });
     saveShelves();
     saveEntries();
-    activeShelf = trimmed;
+    if (openShelves.delete(oldName)) openShelves.add(trimmed);
     render();
   }
 
   function deleteShelf(name) {
     if (!confirm(`Delete "${name}"? Fics on it move to Unshelved.`)) return;
     shelves = shelves.filter(s => s !== name);
-    entries.forEach(e => { if (e.shelf === name) e.shelf = null; });
+    entries.forEach(e => {
+      e.shelves = entryShelves(e).filter(s => s !== name);
+    });
     saveShelves();
     saveEntries();
-    activeShelf = 'unshelved';
+    openShelves.delete(name);
+    openShelves.add('unshelved');
     render();
   }
 
@@ -602,7 +697,7 @@
 
     const refreshBtn = node.querySelector('.stub-refresh');
     if (entry.url) {
-      refreshBtn.addEventListener('click', () => window.open(entry.url, '_blank', 'noopener'));
+      refreshBtn.addEventListener('click', () => refreshEntry(entry.id, refreshBtn));
     } else {
       refreshBtn.disabled = true;
       refreshBtn.title = 'No AO3 link saved for this card';
@@ -628,7 +723,7 @@
 
     setupTagInput(node, entry);
     setupNotes(node, entry);
-    setupShelfSelect(node, entry);
+    setupShelfPicker(node, entry);
     setupStarRating(node, entry);
     setupAoTags(node, entry);
 
@@ -680,30 +775,60 @@
     });
   }
 
-  // Lets a card be moved onto a shelf (or back to Unshelved) from wherever it's shown
-  function setupShelfSelect(node, entry) {
-    const select = node.querySelector('.shelf-select');
-    select.innerHTML = '';
+  // Lets a card be filed onto any number of shelves at once (or none, i.e. Unshelved)
+  function setupShelfPicker(node, entry) {
+    const details = node.querySelector('.shelf-picker');
+    const summary = node.querySelector('.shelf-picker-summary');
+    const list = node.querySelector('.shelf-picker-list');
 
-    const unshelvedOpt = document.createElement('option');
-    unshelvedOpt.value = '';
-    unshelvedOpt.textContent = 'Unshelved';
-    select.appendChild(unshelvedOpt);
+    function paintSummary() {
+      const current = entryShelves(entry);
+      summary.textContent = current.length ? current.join(', ') : 'Unshelved';
+    }
 
-    shelves.forEach(name => {
-      const opt = document.createElement('option');
-      opt.value = name;
-      opt.textContent = name;
-      select.appendChild(opt);
-    });
+    function paintList() {
+      list.innerHTML = '';
 
-    select.value = entry.shelf || '';
+      if (shelves.length === 0) {
+        const hint = document.createElement('p');
+        hint.className = 'shelf-picker-hint';
+        hint.textContent = 'No shelves yet — add one from the Shelves tab.';
+        list.appendChild(hint);
+        return;
+      }
 
-    select.addEventListener('change', () => {
-      entry.shelf = select.value || null;
-      saveEntries();
-      renderBookshelf();
-      if (view === 'shelves') renderShelfContents();
+      shelves.forEach(name => {
+        const label = document.createElement('label');
+        label.className = 'shelf-picker-item';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = entryShelves(entry).includes(name);
+        checkbox.addEventListener('change', () => {
+          const current = new Set(entryShelves(entry));
+          if (checkbox.checked) current.add(name); else current.delete(name);
+          entry.shelves = Array.from(current);
+          saveEntries();
+          paintSummary();
+          renderShelfPills();
+        });
+
+        const text = document.createElement('span');
+        text.textContent = name;
+
+        label.appendChild(checkbox);
+        label.appendChild(text);
+        list.appendChild(label);
+      });
+    }
+
+    paintSummary();
+    paintList();
+
+    // Shelves can change elsewhere (added/renamed/deleted) while this card's
+    // picker sits closed — refresh the checkbox list each time it opens.
+    details.addEventListener('toggle', () => {
+      if (details.open) paintList();
     });
   }
 
@@ -919,6 +1044,134 @@
     render();
   }
 
+  // ---- Import / export ----
+  // Export is a straight dump of everything in localStorage; import merges
+  // by URL so re-importing the same backup (or a slightly older one) never
+  // duplicates cards. Entries without a URL (manual adds) are always kept.
+  function exportData() {
+    const payload = {
+      format: 'the-stacks',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      entries,
+      shelves,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `the-stacks-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast(`Exported ${entries.length} card${entries.length === 1 ? '' : 's'}`);
+  }
+
+  function importData(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      let data;
+      try {
+        data = JSON.parse(reader.result);
+      } catch (e) {
+        showToast("Couldn't read that file — not valid JSON");
+        return;
+      }
+
+      const incomingEntries = Array.isArray(data.entries) ? data.entries
+        : Array.isArray(data) ? data
+        : null;
+      if (!incomingEntries) {
+        showToast("That file doesn't look like a stacks export");
+        return;
+      }
+      const incomingShelves = Array.isArray(data.shelves) ? data.shelves : [];
+
+      const existingUrls = new Set(entries.filter(e => e.url).map(e => e.url));
+      const existingIds = new Set(entries.map(e => e.id));
+      let added = 0, skipped = 0;
+
+      incomingEntries.forEach(raw => {
+        if (raw.url && existingUrls.has(raw.url)) { skipped++; return; }
+        const id = raw.id && !existingIds.has(raw.id) ? raw.id : uid();
+        existingIds.add(id);
+        if (raw.url) existingUrls.add(raw.url);
+        const pushed = Object.assign({}, raw, { id });
+        migrateShelfField(pushed);
+        entries.push(pushed);
+        added++;
+      });
+
+      incomingShelves.forEach(name => {
+        if (!shelves.includes(name)) shelves.push(name);
+      });
+
+      saveEntries();
+      saveShelves();
+      render();
+
+      showToast(
+        added === 0
+          ? `Nothing new — all ${skipped} card${skipped === 1 ? '' : 's'} already on file`
+          : `Imported ${added} card${added === 1 ? '' : 's'}${skipped ? ` (${skipped} already on file)` : ''}`
+      );
+    };
+    reader.onerror = () => showToast("Couldn't read that file");
+    reader.readAsText(file);
+  }
+
+  // Pull the latest chapters/word count/etc. for one card. If no worker
+  // is configured (or the fetch fails), fall back to just opening the fic
+  // on AO3 so the person can re-tap "Info" there instead.
+  async function refreshEntry(entryId, btn) {
+    const entry = entries.find(e => e.id === entryId);
+    if (!entry || !entry.url) return;
+
+    if (!CONFIG.refreshApiUrl) {
+      window.open(entry.url, '_blank', 'noopener');
+      return;
+    }
+
+    const original = btn.textContent;
+    btn.textContent = '…';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch(`${CONFIG.refreshApiUrl}?url=${encodeURIComponent(entry.url)}`);
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || `Request failed (${res.status})`);
+
+      const prevChapters = entry.chapters;
+      Object.assign(entry, {
+        title: data.title || entry.title,
+        authors: data.authors || entry.authors,
+        summary: data.summary || entry.summary,
+        rating: data.rating || entry.rating,
+        warnings: data.warnings || entry.warnings,
+        category: data.category || entry.category,
+        fandoms: data.fandoms || entry.fandoms,
+        relationships: data.relationships || entry.relationships,
+        characters: data.characters || entry.characters,
+        freeform: data.freeform || entry.freeform,
+        words: data.words != null ? data.words : entry.words,
+        chapters: data.chapters || entry.chapters,
+        complete: data.complete != null ? data.complete : entry.complete,
+      });
+      saveEntries();
+      render();
+      showToast(
+        data.chapters && data.chapters !== prevChapters
+          ? `Updated "${entry.title}" — now ${data.chapters} chapters`
+          : `"${entry.title}" is already up to date`
+      );
+    } catch (err) {
+      btn.textContent = original;
+      btn.disabled = false;
+      showToast(`Couldn't refresh — ${err.message || 'AO3 request failed'}`);
+    }
+  }
+
   // ---- Search & filter wiring ----
   searchInput.addEventListener('input', render);
 
@@ -966,7 +1219,7 @@
       summary: document.getElementById('f_summary').value.trim(),
       tags: document.getElementById('f_tags').value.split(',').map(t => t.trim()).filter(Boolean),
       notes: '',
-      shelf: null,
+      shelves: [],
       stars: null,
       rating: [],
       warnings: [],
@@ -996,11 +1249,18 @@
       });
       catalogView.hidden = view !== 'catalog';
       shelvesView.hidden = view !== 'shelves';
-      if (view === 'shelves') {
-        renderBookshelf();
-        renderShelfContents();
-      }
+      if (view === 'shelves') renderShelfPills();
     });
+  });
+
+  // ---- Import / export ----
+  document.getElementById('exportBtn').addEventListener('click', exportData);
+  const importInput = document.getElementById('importInput');
+  document.getElementById('importBtn').addEventListener('click', () => importInput.click());
+  importInput.addEventListener('change', () => {
+    const file = importInput.files[0];
+    if (file) importData(file);
+    importInput.value = ''; // allow importing the same file again later
   });
 
   // ---- Scroll to top ----

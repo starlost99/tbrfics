@@ -20,9 +20,16 @@
 </header>
 
 <main>
-  <div class="view-tabs" role="tablist">
-    <button type="button" class="view-tab active" data-view="catalog" role="tab" aria-selected="true">Catalog</button>
-    <button type="button" class="view-tab" data-view="shelves" role="tab" aria-selected="false">Shelves</button>
+  <div class="toolbar-row">
+    <div class="view-tabs" role="tablist">
+      <button type="button" class="view-tab active" data-view="catalog" role="tab" aria-selected="true">Catalog</button>
+      <button type="button" class="view-tab" data-view="shelves" role="tab" aria-selected="false">Shelves</button>
+    </div>
+    <div class="data-actions">
+      <button type="button" id="exportBtn" class="btn-ghost btn-data" title="Download your cards and shelves as a JSON file">Export</button>
+      <button type="button" id="importBtn" class="btn-ghost btn-data" title="Load cards and shelves from a JSON file">Import</button>
+      <input type="file" id="importInput" accept="application/json" hidden>
+    </div>
   </div>
 
   <div id="catalogView">
@@ -83,12 +90,8 @@
   </div>
 
   <div id="shelvesView" hidden>
-    <div class="bookshelf-wrap">
-      <div class="bookshelf-rail" id="bookshelfRail"></div>
-      <div class="shelf-plank"></div>
-    </div>
-    <div id="shelfContents" class="shelf-contents">
-      <p class="shelf-hint">Tap a spine to pull that shelf down.</p>
+    <div class="shelf-pillbox" id="shelfPillbox">
+      <!-- shelf pills injected here -->
     </div>
   </div>
 </main>
@@ -123,7 +126,10 @@
       </div>
     </div>
     <div class="card-shelf">
-      <select class="shelf-select" title="Move to a shelf"></select>
+      <details class="shelf-picker">
+        <summary class="shelf-picker-summary" title="Choose which shelves this fic is filed on"></summary>
+        <div class="shelf-picker-list"></div>
+      </details>
     </div>
     <h3 class="card-title"><a target="_blank" rel="noopener"></a></h3>
     <p class="card-byline">by <span class="card-authors"></span></p>
