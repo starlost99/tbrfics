@@ -259,6 +259,17 @@ main {
   font-size: 0.85rem;
   color: var(--ink);
 }
+.sort-select {
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--bg);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--ink);
+  align-self: flex-start;
+}
+.sort-select:focus-visible { outline: 2px solid var(--rose-deep); outline-offset: 1px; }
 .btn-clear-filters {
   align-self: flex-start;
   font-size: 0.78rem;

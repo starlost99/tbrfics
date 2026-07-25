@@ -45,6 +45,20 @@
         <summary>Filters <span class="filter-count" id="filterCount" hidden></span></summary>
         <div class="filter-body">
           <div class="filter-group">
+            <p class="filter-label">Sort by</p>
+            <select id="sortSelect" class="sort-select">
+              <option value="dateAdded-desc">Date added (newest first)</option>
+              <option value="dateAdded-asc">Date added (oldest first)</option>
+              <option value="title-asc">Title (A–Z)</option>
+              <option value="title-desc">Title (Z–A)</option>
+              <option value="words-desc">Word count (highest first)</option>
+              <option value="words-asc">Word count (lowest first)</option>
+              <option value="kudos-desc">Kudos (highest first)</option>
+              <option value="stars-desc">Your rating (highest first)</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
             <p class="filter-label">Rating</p>
             <div class="chip-row" id="ratingRail"></div>
           </div>

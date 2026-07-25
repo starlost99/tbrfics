@@ -22,6 +22,7 @@
   let wordMax = null;
   let activeAoTags = new Set();    // fandom/relationship/character/freeform — AND match
   let aoTagQuery = '';
+  let sortBy = 'dateAdded-desc';   // shared between Catalog and Shelves
 
   // ---- View state ----
   let view = 'catalog';   // 'catalog' | 'shelves'
@@ -188,6 +189,7 @@
   const starRail = document.getElementById('starRail');
   const wordMinInput = document.getElementById('wordMinInput');
   const wordMaxInput = document.getElementById('wordMaxInput');
+  const sortSelect = document.getElementById('sortSelect');
   const aoTagSearch = document.getElementById('aoTagSearch');
   const aoTagRail = document.getElementById('aoTagRail');
   const filterCount = document.getElementById('filterCount');
@@ -407,6 +409,41 @@
     return haystack.includes(query);
   }
 
+  // Sorts a copy of the given list according to the current sortBy value.
+  // Shared by both the Catalog grid and the Shelves row list so switching
+  // the sort order stays consistent across views.
+  function sortEntries(list) {
+    const sorted = list.slice();
+    switch (sortBy) {
+      case 'dateAdded-asc':
+        sorted.sort((a, b) => new Date(a.dateAdded || 0) - new Date(b.dateAdded || 0));
+        break;
+      case 'title-asc':
+        sorted.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+        break;
+      case 'title-desc':
+        sorted.sort((a, b) => (b.title || '').localeCompare(a.title || ''));
+        break;
+      case 'words-desc':
+        sorted.sort((a, b) => (b.words ?? -1) - (a.words ?? -1));
+        break;
+      case 'words-asc':
+        sorted.sort((a, b) => (a.words ?? Infinity) - (b.words ?? Infinity));
+        break;
+      case 'kudos-desc':
+        sorted.sort((a, b) => (b.kudos ?? -1) - (a.kudos ?? -1));
+        break;
+      case 'stars-desc':
+        sorted.sort((a, b) => (b.stars || 0) - (a.stars || 0));
+        break;
+      case 'dateAdded-desc':
+      default:
+        sorted.sort((a, b) => new Date(b.dateAdded || 0) - new Date(a.dateAdded || 0));
+        break;
+    }
+    return sorted;
+  }
+
   function extractOrSection(summary) {
     const match = summary.match(/\bor[:,\-–—]\s*/i);
     if (!match) return summary;
@@ -440,7 +477,7 @@
 
   function render() {
     const query = searchInput.value.trim().toLowerCase();
-    const visible = entries.filter(e => matchesFilters(e, query));
+    const visible = sortEntries(entries.filter(e => matchesFilters(e, query)));
 
     grid.innerHTML = '';
     visible.forEach(entry => grid.appendChild(buildCard(entry)));
@@ -529,9 +566,9 @@
     }
 
     const isUnshelved = activeShelf === 'unshelved';
-    const list = isUnshelved
+    const list = sortEntries(isUnshelved
       ? entries.filter(e => entryShelves(e).length === 0)
-      : entries.filter(e => entryShelves(e).includes(activeShelf));
+      : entries.filter(e => entryShelves(e).includes(activeShelf)));
 
     const header = document.createElement('div');
     header.className = 'shelf-header';
@@ -1260,6 +1297,11 @@
 
   // ---- Search & filter wiring ----
   searchInput.addEventListener('input', render);
+
+  sortSelect.addEventListener('change', () => {
+    sortBy = sortSelect.value;
+    render();
+  });
 
   wordMinInput.addEventListener('input', () => {
     wordMin = wordMinInput.value === '' ? null : Math.max(0, parseInt(wordMinInput.value, 10) || 0);
