@@ -498,7 +498,8 @@ main {
   align-items: flex-end;
   gap: 0.3rem;
   overflow-x: auto;
-  padding: 0 0.25rem 0.6rem;
+  overflow-y: hidden;
+  padding: 20px 0.25rem 0.6rem;
   scrollbar-width: thin;
 }
 
