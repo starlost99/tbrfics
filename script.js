@@ -486,6 +486,12 @@
       case 'stars-desc':
         sorted.sort((a, b) => (b.stars || 0) - (a.stars || 0));
         break;
+      case 'published-desc':
+        sorted.sort((a, b) => new Date(b.published || 0) - new Date(a.published || 0));
+        break;
+      case 'published-asc':
+        sorted.sort((a, b) => new Date(a.published || 0) - new Date(b.published || 0));
+        break;
       case 'dateAdded-desc':
       default:
         sorted.sort((a, b) => new Date(b.dateAdded || 0) - new Date(a.dateAdded || 0));
