@@ -22,11 +22,43 @@
 <main>
   <section class="controls">
     <div class="search-row">
-      <input type="search" id="searchInput" placeholder="search title or author…" autocomplete="off">
+      <input type="search" id="searchInput" placeholder="search title, author, fandom, tags…" autocomplete="off">
     </div>
     <div class="tag-rail" id="tagRail">
-      <!-- tag filter chips injected here -->
+      <!-- your own tag filter chips injected here -->
     </div>
+
+    <details class="filter-panel" id="filterPanel">
+      <summary>Filters <span class="filter-count" id="filterCount" hidden></span></summary>
+      <div class="filter-body">
+        <div class="filter-group">
+          <p class="filter-label">Rating</p>
+          <div class="chip-row" id="ratingRail"></div>
+        </div>
+
+        <div class="filter-group">
+          <p class="filter-label">Status</p>
+          <div class="chip-row" id="statusRail"></div>
+        </div>
+
+        <div class="filter-group">
+          <p class="filter-label">Word count</p>
+          <div class="range-row">
+            <input type="number" id="wordMinInput" placeholder="min" min="0" inputmode="numeric">
+            <span class="range-dash">–</span>
+            <input type="number" id="wordMaxInput" placeholder="max" min="0" inputmode="numeric">
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <p class="filter-label">Fandom, relationship, character &amp; additional tags</p>
+          <input type="search" id="aoTagSearch" placeholder="search tags…" autocomplete="off">
+          <div class="chip-row" id="aoTagRail"></div>
+        </div>
+
+        <button type="button" id="clearFiltersBtn" class="btn-ghost btn-clear-filters">Clear filters</button>
+      </div>
+    </details>
   </section>
 
   <section id="cardGrid" class="card-grid">
@@ -67,6 +99,7 @@
     </div>
     <h3 class="card-title"><a target="_blank" rel="noopener"></a></h3>
     <p class="card-byline">by <span class="card-authors"></span></p>
+    <div class="card-badges"></div>
     <p class="card-summary"></p>
     <div class="card-rule"></div>
     <div class="card-tags"></div>
