@@ -10,8 +10,10 @@
 
   const STORE_KEY = 'tbr-stacks-v1';
   const SHELVES_STORE_KEY = 'tbr-stacks-shelves-v1';
+  const SHELF_COLORS_STORE_KEY = 'tbr-stacks-shelf-colors-v1';
   let entries = loadEntries();
   let shelves = loadShelves(); // array of shelf names, in creation order — a fic lives on at most one
+  let shelfColors = loadShelfColors(); // { shelfName: paletteKey } — only set when the person picks one explicitly
 
   // ---- Filter state ----
   let activeTags = new Set();      // your own custom tags — OR match
@@ -28,6 +30,7 @@
   let view = 'catalog';   // 'catalog' | 'shelves'
   let activeShelf = null; // 'unshelved' | a shelf name | null (nothing pulled down yet)
   let expandedRows = new Set(); // entry ids currently expanded to show full card details in the Shelves view
+  let colorPickerOpen = false;  // whether the swatch picker is open for the active shelf
 
   function loadEntries() {
     try {
@@ -55,6 +58,19 @@
 
   function saveShelves() {
     localStorage.setItem(SHELVES_STORE_KEY, JSON.stringify(shelves));
+  }
+
+  function loadShelfColors() {
+    try {
+      const raw = localStorage.getItem(SHELF_COLORS_STORE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function saveShelfColors() {
+    localStorage.setItem(SHELF_COLORS_STORE_KEY, JSON.stringify(shelfColors));
   }
 
   // A fic can now live on any number of shelves — [] means unshelved.
@@ -201,7 +217,32 @@
   const bookshelfRail = document.getElementById('bookshelfRail');
   const shelfContents = document.getElementById('shelfContents');
 
-  const SPINE_PALETTE = ['var(--rose-deep)', 'var(--gold)', '#6E9B6E', '#5C8DBF', 'var(--coral)', 'var(--ink)'];
+  const SPINE_PALETTE = [
+    { key: 'rose', label: 'Rose', color: 'var(--rose-deep)' },
+    { key: 'blush', label: 'Blush', color: '#E39CB2' },
+    { key: 'coral', label: 'Coral', color: 'var(--coral)' },
+    { key: 'peach', label: 'Peach', color: '#E8956B' },
+    { key: 'gold', label: 'Gold', color: 'var(--gold)' },
+    { key: 'sage', label: 'Sage', color: '#6E9B6E' },
+    { key: 'mint', label: 'Mint', color: '#6FB89A' },
+    { key: 'sky', label: 'Sky', color: '#5C8DBF' },
+    { key: 'lavender', label: 'Lavender', color: '#9B87C4' },
+    { key: 'plum', label: 'Plum', color: '#8C5E83' },
+    { key: 'ink', label: 'Ink', color: 'var(--ink)' },
+  ];
+
+  function paletteColor(key) {
+    const found = SPINE_PALETTE.find(p => p.key === key);
+    return found ? found.color : null;
+  }
+
+  // Explicit user picks take priority; otherwise fall back to a stable
+  // hash-based pick so untouched shelves still look varied.
+  function spineColorForShelf(name) {
+    const explicit = paletteColor(shelfColors[name]);
+    if (explicit) return explicit;
+    return SPINE_PALETTE[hashString(name) % SPINE_PALETTE.length].color;
+  }
 
   function hashString(str) {
     let h = 0;
@@ -521,12 +562,13 @@
       spine.type = 'button';
       spine.className = 'spine' + (item.special ? ' spine-unshelved' : '') + (activeShelf === item.key ? ' active' : '');
       if (!item.special) {
-        spine.style.background = SPINE_PALETTE[hashString(item.key) % SPINE_PALETTE.length];
+        spine.style.background = spineColorForShelf(item.key);
       }
       spine.style.setProperty('--spine-w', spineWidth(item.key) + 'px');
       spine.title = `${item.label} (${count})`;
       spine.addEventListener('click', () => {
         activeShelf = item.key;
+        colorPickerOpen = false;
         renderBookshelf();
         renderShelfContents();
       });
@@ -586,6 +628,15 @@
       const actions = document.createElement('div');
       actions.className = 'shelf-actions';
 
+      const colorBtn = document.createElement('button');
+      colorBtn.type = 'button';
+      colorBtn.className = 'btn-ghost shelf-action-btn';
+      colorBtn.textContent = 'Color';
+      colorBtn.addEventListener('click', () => {
+        colorPickerOpen = !colorPickerOpen;
+        renderShelfContents();
+      });
+
       const renameBtn = document.createElement('button');
       renameBtn.type = 'button';
       renameBtn.className = 'btn-ghost shelf-action-btn';
@@ -598,12 +649,17 @@
       deleteBtn.textContent = 'Delete';
       deleteBtn.addEventListener('click', () => deleteShelf(activeShelf));
 
+      actions.appendChild(colorBtn);
       actions.appendChild(renameBtn);
       actions.appendChild(deleteBtn);
       header.appendChild(actions);
     }
 
     shelfContents.appendChild(header);
+
+    if (!isUnshelved && colorPickerOpen) {
+      shelfContents.appendChild(buildColorRow(activeShelf));
+    }
 
     if (list.length === 0) {
       const empty = document.createElement('p');
@@ -625,6 +681,33 @@
   // unroll the full catalog card (tags, notes, summary, AO3 tags, etc.)
   // right underneath; tap again to collapse. The thumbnail and title links
   // still navigate to AO3 as normal instead of toggling.
+  // Row of tappable color swatches for the active shelf's spine.
+  function buildColorRow(name) {
+    const row = document.createElement('div');
+    row.className = 'shelf-color-row';
+
+    const currentKey = shelfColors[name] || null;
+
+    SPINE_PALETTE.forEach(({ key, label, color }) => {
+      const swatch = document.createElement('button');
+      swatch.type = 'button';
+      swatch.className = 'color-swatch' + (currentKey === key ? ' active' : '');
+      swatch.style.background = color;
+      swatch.title = label;
+      swatch.setAttribute('aria-label', label);
+      swatch.addEventListener('click', () => {
+        shelfColors[name] = key;
+        saveShelfColors();
+        colorPickerOpen = false;
+        renderBookshelf();
+        renderShelfContents();
+      });
+      row.appendChild(swatch);
+    });
+
+    return row;
+  }
+
   function buildShelfRow(entry) {
     const wrap = document.createElement('div');
     wrap.className = 'shelf-row-wrap';
@@ -645,7 +728,7 @@
       thumb.target = '_blank';
       thumb.rel = 'noopener';
     }
-    thumb.style.background = SPINE_PALETTE[hashString(entry.title || entry.id) % SPINE_PALETTE.length];
+    thumb.style.background = SPINE_PALETTE[hashString(entry.title || entry.id) % SPINE_PALETTE.length].color;
     thumb.textContent = (entry.title || '?').trim().charAt(0).toUpperCase();
     row.appendChild(thumb);
 
@@ -777,6 +860,11 @@
       return;
     }
     shelves = shelves.map(s => (s === oldName ? trimmed : s));
+    if (shelfColors[oldName]) {
+      shelfColors[trimmed] = shelfColors[oldName];
+      delete shelfColors[oldName];
+      saveShelfColors();
+    }
     entries.forEach(e => {
       const idx = entryShelves(e).indexOf(oldName);
       if (idx !== -1) e.shelves[idx] = trimmed;
@@ -790,12 +878,17 @@
   function deleteShelf(name) {
     if (!confirm(`Delete "${name}"? Fics on it move to Unshelved.`)) return;
     shelves = shelves.filter(s => s !== name);
+    if (shelfColors[name]) {
+      delete shelfColors[name];
+      saveShelfColors();
+    }
     entries.forEach(e => {
       e.shelves = entryShelves(e).filter(s => s !== name);
     });
     saveShelves();
     saveEntries();
     activeShelf = 'unshelved';
+    colorPickerOpen = false;
     render();
   }
 
