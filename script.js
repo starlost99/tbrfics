@@ -229,24 +229,30 @@
   const libraryView = document.getElementById('libraryView');
   const libraryGrid = document.getElementById('libraryGrid');
   const libraryEmptyState = document.getElementById('libraryEmptyState');
+  const bookInfoDialog = document.getElementById('bookInfoDialog');
+  const bookInfoContent = document.getElementById('bookInfoContent');
+  document.getElementById('closeBookInfo').addEventListener('click', () => bookInfoDialog.close());
+  bookInfoDialog.addEventListener('click', (e) => {
+    if (e.target === bookInfoDialog) bookInfoDialog.close(); // click on backdrop
+  });
 
-  // Cover gradients — fixed hex pairs rather than the app's CSS vars, since
-  // real book covers keep their own identity regardless of light/dark mode.
-  // Each pair is dark enough for white text; a scrim overlay (see CSS)
-  // handles legibility over the lighter ones.
+  // Cover gradients — fixed pastel hex pairs rather than the app's CSS vars,
+  // since covers should keep their own cute identity regardless of
+  // light/dark mode. Text sits directly on top in --ink, since these are
+  // light enough for that to stay legible without a scrim.
   const COVER_PALETTE = [
-    ['#A85D76', '#7A3F56'], // rose
-    ['#E0684F', '#B8432E'], // coral
-    ['#C99A4A', '#96701C'], // gold
-    ['#6E9B6E', '#4B7249'], // sage
-    ['#6FB89A', '#3F8568'], // mint
-    ['#5C8DBF', '#3A6693'], // sky
-    ['#9B87C4', '#6B5798'], // lavender
-    ['#8C5E83', '#603D5A'], // plum
-    ['#3B2635', '#1F1420'], // ink
-    ['#E39CB2', '#B85F7D'], // blush
-    ['#D98255', '#A85736'], // terracotta
-    ['#4F6D8C', '#2E4460'], // slate
+    ['#FBD9E4', '#F5C2D6'], // pink
+    ['#FDE2CE', '#FAD0B0'], // peach
+    ['#FBEFC6', '#F6E2A0'], // butter
+    ['#D8F0E0', '#BFE6CE'], // mint
+    ['#D9EAF7', '#BFDCF0'], // sky
+    ['#E6DFF7', '#D6C9F0'], // lavender
+    ['#F0DFF2', '#E3C9EA'], // lilac
+    ['#E3EFD9', '#CFE3C0'], // sage
+    ['#F7D9DE', '#F0C2CB'], // rose
+    ['#FBE3E9', '#F5CBD8'], // blush
+    ['#FBF3E4', '#F5E7CB'], // cream
+    ['#E1E4F7', '#CBD0F0'], // periwinkle
   ];
 
   function coverGradientFor(entry) {
@@ -1471,19 +1477,19 @@
   // handler below), same as Shelves.
 
   function buildBookCover(entry) {
-    const cover = document.createElement(entry.url ? 'a' : 'div');
+    const cover = document.createElement('button');
+    cover.type = 'button';
     cover.className = 'book-cover';
-    if (entry.url) {
-      cover.href = entry.url;
-      cover.target = '_blank';
-      cover.rel = 'noopener';
-    }
     cover.style.backgroundImage = coverGradientFor(entry);
+    cover.addEventListener('click', () => openBookInfo(entry));
 
-    const imprint = document.createElement('span');
-    imprint.className = 'book-imprint';
-    imprint.textContent = (entry.fandoms && entry.fandoms[0]) || (entry.tags && entry.tags[0]) || '';
-    cover.appendChild(imprint);
+    const rating = entry.rating && entry.rating[0];
+    if (rating) {
+      const badge = document.createElement('span');
+      badge.className = `book-rating badge badge-rating-${ratingClass(rating)}`;
+      badge.textContent = rating;
+      cover.appendChild(badge);
+    }
 
     const title = document.createElement('span');
     title.className = 'book-title';
@@ -1508,6 +1514,16 @@
     cover.appendChild(meta);
 
     return cover;
+  }
+
+  // Clicking a cover opens the same full card used in Catalog/Shelves — all
+  // its editing controls (stars, tags, notes, shelves, refresh) work as-is
+  // since buildCard() binds directly to the real entry object.
+  function openBookInfo(entry) {
+    if (!bookInfoDialog) return;
+    bookInfoContent.innerHTML = '';
+    bookInfoContent.appendChild(buildCard(entry));
+    bookInfoDialog.showModal();
   }
 
   function renderLibrary() {
