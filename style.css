@@ -307,7 +307,7 @@ main {
 }
 
 .toolbar-row .data-actions {
-  align-self: flex-end;
+  align-self: flex-start;
 }
 
 .view-tabs {
@@ -627,6 +627,11 @@ main {
   opacity: 1;
   color: var(--ink);
   text-decoration: underline;
+}
+.shelf-action-btn.btn-ghost:disabled {
+  opacity: 0.25;
+  cursor: default;
+  pointer-events: none;
 }
 
 .shelf-color-row {

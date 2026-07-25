@@ -567,7 +567,10 @@
   function formatReadTime(words) {
     if (!words) return '';
     const minutes = Math.max(1, Math.round(words / READING_WPM));
-    return minutes === 1 ? '1 min read' : `${minutes} min read`;
+    if (minutes < 60) return minutes === 1 ? '1 min read' : `${minutes} min read`;
+    const hours = Math.floor(minutes / 60);
+    const rem = minutes % 60;
+    return rem === 0 ? `${hours}h read` : `${hours}h ${rem}m read`;
   }
 
   function formatCount(n) {
@@ -703,6 +706,24 @@
       const actions = document.createElement('div');
       actions.className = 'shelf-actions';
 
+      const idx = shelves.indexOf(activeShelf);
+
+      const moveLeftBtn = document.createElement('button');
+      moveLeftBtn.type = 'button';
+      moveLeftBtn.className = 'btn-ghost shelf-action-btn';
+      moveLeftBtn.textContent = '←';
+      moveLeftBtn.title = 'Move this shelf earlier';
+      moveLeftBtn.disabled = idx <= 0;
+      moveLeftBtn.addEventListener('click', () => moveShelf(activeShelf, -1));
+
+      const moveRightBtn = document.createElement('button');
+      moveRightBtn.type = 'button';
+      moveRightBtn.className = 'btn-ghost shelf-action-btn';
+      moveRightBtn.textContent = '→';
+      moveRightBtn.title = 'Move this shelf later';
+      moveRightBtn.disabled = idx === -1 || idx >= shelves.length - 1;
+      moveRightBtn.addEventListener('click', () => moveShelf(activeShelf, 1));
+
       const colorBtn = document.createElement('button');
       colorBtn.type = 'button';
       colorBtn.className = 'btn-ghost shelf-action-btn';
@@ -724,6 +745,8 @@
       deleteBtn.textContent = 'Delete';
       deleteBtn.addEventListener('click', () => deleteShelf(activeShelf));
 
+      actions.appendChild(moveLeftBtn);
+      actions.appendChild(moveRightBtn);
       actions.appendChild(colorBtn);
       actions.appendChild(renameBtn);
       actions.appendChild(deleteBtn);
@@ -976,6 +999,16 @@
     activeShelf = 'unshelved';
     colorPickerOpen = false;
     render();
+  }
+
+  function moveShelf(name, direction) {
+    const idx = shelves.indexOf(name);
+    const target = idx + direction;
+    if (idx === -1 || target < 0 || target >= shelves.length) return;
+    [shelves[idx], shelves[target]] = [shelves[target], shelves[idx]];
+    saveShelves();
+    renderBookshelf();
+    renderShelfContents();
   }
 
   function buildCard(entry) {
