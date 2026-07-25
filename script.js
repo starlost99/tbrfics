@@ -634,9 +634,12 @@
     }
 
     const isUnshelved = activeShelf === 'unshelved';
-    const list = sortEntries(isUnshelved
+    const shelfMembers = isUnshelved
       ? entries.filter(e => entryShelves(e).length === 0)
-      : entries.filter(e => entryShelves(e).includes(activeShelf)));
+      : entries.filter(e => entryShelves(e).includes(activeShelf));
+
+    const query = searchInput.value.trim().toLowerCase();
+    const list = sortEntries(shelfMembers.filter(e => matchesFilters(e, query)));
 
     const header = document.createElement('div');
     header.className = 'shelf-header';
@@ -647,7 +650,9 @@
 
     const count = document.createElement('span');
     count.className = 'shelf-count';
-    count.textContent = `${list.length} card${list.length === 1 ? '' : 's'}`;
+    count.textContent = list.length === shelfMembers.length
+      ? `${shelfMembers.length} card${shelfMembers.length === 1 ? '' : 's'}`
+      : `${list.length} of ${shelfMembers.length} cards`;
     header.appendChild(count);
 
     if (!isUnshelved) {
@@ -690,9 +695,13 @@
     if (list.length === 0) {
       const empty = document.createElement('p');
       empty.className = 'shelf-hint';
-      empty.textContent = isUnshelved
-        ? 'Nothing unshelved — everything has a home.'
-        : 'Nothing filed here yet — use a card\'s shelf picker to add one.';
+      if (shelfMembers.length === 0) {
+        empty.textContent = isUnshelved
+          ? 'Nothing unshelved — everything has a home.'
+          : 'Nothing filed here yet — use a card\'s shelf picker to add one.';
+      } else {
+        empty.textContent = 'Nothing on this shelf matches your current filters.';
+      }
       shelfContents.appendChild(empty);
       return;
     }
