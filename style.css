@@ -381,6 +381,12 @@ main {
   align-items: center;
   gap: 0.3rem;
 }
+.pill-label {
+  cursor: pointer;
+}
+.pill-label:hover {
+  text-decoration: underline;
+}
 .pill button {
   background: none;
   border: none;
@@ -440,6 +446,38 @@ main {
   background: var(--bg);
 }
 
+.card-notes {
+  margin-top: 0.7rem;
+}
+
+.notes-input {
+  width: 100%;
+  resize: none;
+  overflow: hidden;
+  border: none;
+  border-left: 2px solid var(--rule);
+  background: transparent;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+  padding: 0.1rem 0 0.1rem 0.6rem;
+  min-height: 1.5em;
+}
+.notes-input::placeholder {
+  color: var(--ink-soft);
+  opacity: 0.55;
+}
+.notes-input:focus-visible {
+  outline: none;
+  border-left-color: var(--rose-deep);
+  color: var(--ink);
+}
+.notes-input:not(:placeholder-shown) {
+  border-left-color: var(--gold);
+}
+
 .ao-tags {
   margin-top: 0.7rem;
 }
@@ -469,12 +507,18 @@ main {
   gap: 0.3rem;
 }
 .pill-ao {
+  font-family: var(--font-body);
   font-size: 0.68rem;
   background: transparent;
   color: var(--ink-soft);
   border: 1px solid var(--rule);
   border-radius: 999px;
   padding: 0.18rem 0.5rem;
+  cursor: pointer;
+}
+.pill-ao:hover {
+  border-color: var(--rose-deep);
+  color: var(--rose-deep);
 }
 
 .empty-state {

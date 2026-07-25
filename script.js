@@ -111,6 +111,7 @@
   const aoTagRail = document.getElementById('aoTagRail');
   const filterCount = document.getElementById('filterCount');
   const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+  const filterPanel = document.getElementById('filterPanel');
 
   function allTags() {
     const set = new Set();
@@ -119,7 +120,35 @@
   }
 
   function entryAoTags(entry) {
-    return [].concat(entry.fandoms || [], entry.relationships || [], entry.characters || [], entry.freeform || []);
+    return [].concat(
+      entry.fandoms || [], entry.relationships || [], entry.characters || [], entry.freeform || [],
+      entry.aoTags || [] // legacy flat list, kept matchable so old cards stay filterable
+    );
+  }
+
+  // Clicking any tag on a card: clear other filters and search for just that tag
+  function filterByTag(kind, tag) {
+    activeTags.clear();
+    activeRatings.clear();
+    activeAoTags.clear();
+    statusFilter = 'all';
+    wordMin = null;
+    wordMax = null;
+    wordMinInput.value = '';
+    wordMaxInput.value = '';
+    aoTagQuery = '';
+    aoTagSearch.value = '';
+    searchInput.value = '';
+
+    if (kind === 'custom') {
+      activeTags.add(tag);
+    } else {
+      activeAoTags.add(tag);
+      filterPanel.open = true; // AO3 tags live inside the collapsible panel — open it so the match is visible
+    }
+
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function allAoTags() {
@@ -258,7 +287,7 @@
 
     if (!query) return true;
     const haystack = [
-      entry.title, entry.authors, entry.summary,
+      entry.title, entry.authors, entry.summary, entry.notes,
       ...(entry.tags || []), ...entryAoTags(entry),
     ].join(' ').toLowerCase();
     return haystack.includes(query);
@@ -337,9 +366,40 @@
     (entry.tags || []).forEach(tag => tagsWrap.appendChild(buildPill(entry.id, tag)));
 
     setupTagInput(node, entry);
+    setupNotes(node, entry);
     setupAoTags(node, entry);
 
     return node;
+  }
+
+  // Freeform note per card. Saves as you type (debounced) without a full
+  // re-render, so the textarea never loses focus/cursor position mid-edit.
+  function autoGrow(textarea) {
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
+  }
+
+  function setupNotes(node, entry) {
+    const notesInput = node.querySelector('.notes-input');
+    notesInput.value = entry.notes || '';
+
+    // Grow to fit existing content once it's actually in the DOM
+    requestAnimationFrame(() => autoGrow(notesInput));
+
+    let saveTimer = null;
+    notesInput.addEventListener('input', () => {
+      autoGrow(notesInput);
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        entry.notes = notesInput.value;
+        saveEntries();
+      }, 400);
+    });
+    notesInput.addEventListener('blur', () => {
+      clearTimeout(saveTimer);
+      entry.notes = notesInput.value;
+      saveEntries();
+    });
   }
 
   // Rating / word count / chapter progress / category chips
@@ -465,9 +525,12 @@
       const row = document.createElement('div');
       row.className = 'ao-group-row';
       tags.forEach(tag => {
-        const pill = document.createElement('span');
+        const pill = document.createElement('button');
+        pill.type = 'button';
         pill.className = 'pill-ao';
         pill.textContent = tag;
+        pill.title = `Show fics tagged "${tag}"`;
+        pill.addEventListener('click', () => filterByTag('ao', tag));
         row.appendChild(pill);
       });
       list.appendChild(row);
@@ -479,10 +542,16 @@
     pill.className = 'pill';
     const label = document.createElement('span');
     label.textContent = tag;
+    label.className = 'pill-label';
+    label.title = `Show fics tagged "${tag}"`;
+    label.addEventListener('click', () => filterByTag('custom', tag));
     const btn = document.createElement('button');
     btn.textContent = '✕';
     btn.title = `Remove tag "${tag}"`;
-    btn.addEventListener('click', () => removeTag(entryId, tag));
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      removeTag(entryId, tag);
+    });
     pill.appendChild(label);
     pill.appendChild(btn);
     return pill;
