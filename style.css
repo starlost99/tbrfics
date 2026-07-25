@@ -316,104 +316,102 @@ main {
 
 /* ---- Shelves view ---- */
 
-.shelf-pillbox {
-  padding: 1.5rem 0 0;
+.bookshelf-wrap {
+  padding: 2rem 0 0;
+  margin-bottom: 1.75rem;
+}
+
+.bookshelf-rail {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.3rem;
+  overflow-x: auto;
+  padding: 0 0.25rem 0.6rem;
+  scrollbar-width: thin;
+}
+
+.spine {
+  flex: 0 0 auto;
+  width: var(--spine-w, 34px);
+  height: 148px;
+  border: none;
+  border-radius: 3px 3px 0 0;
+  cursor: pointer;
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
-}
-
-.shelf-pill-group {
-  border: 1.5px solid var(--rule);
-  border-radius: 14px;
-  background: var(--surface);
-  overflow: hidden;
-}
-.shelf-pill-group.open {
-  border-color: var(--rose-deep);
-}
-
-.shelf-pill {
-  width: 100%;
-  display: flex;
   align-items: center;
-  gap: 0.6rem;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 0.7rem 1rem;
-  text-align: left;
-  font-family: var(--font-body);
-  --pill-accent: var(--rose-deep);
+  justify-content: space-between;
+  padding: 0.6rem 0 0.5rem;
+  color: var(--surface);
+  box-shadow: inset -6px 0 10px -6px rgba(0,0,0,0.35), 2px 0 0 rgba(255,255,255,0.08) inset;
+  transition: transform 0.15s;
 }
-.shelf-pill::before {
+.spine::after {
+  /* faint page-edge texture */
   content: '';
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--pill-accent);
-  flex: 0 0 auto;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.07) 0 1px, transparent 1px 4px);
+  pointer-events: none;
 }
-.shelf-pill-unshelved::before {
-  background: transparent;
-  border: 1.5px dashed var(--ink-soft);
+.spine:hover { transform: translateY(-4px); }
+.spine.active {
+  transform: translateY(-14px);
+  box-shadow: inset -6px 0 10px -6px rgba(0,0,0,0.35), 0 8px 14px rgba(59,38,53,0.3);
 }
 
-.shelf-pill-label {
+.spine-label {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 1rem;
-  color: var(--ink);
-  flex: 1 1 auto;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  max-height: 108px;
 }
 
-.shelf-pill-count {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--ink-soft);
-  background: var(--bg);
-  border-radius: 999px;
-  padding: 0.15rem 0.55rem;
-  flex: 0 0 auto;
+.spine-count {
+  font-size: 0.62rem;
+  font-weight: 700;
+  opacity: 0.85;
 }
 
-.shelf-pill-chevron {
-  flex: 0 0 auto;
+.spine-unshelved {
+  background: var(--surface);
   color: var(--ink-soft);
-  font-size: 0.9rem;
-  transition: transform 0.2s;
+  border: 1.5px dashed var(--rule);
+  box-shadow: none;
 }
-.shelf-pill.active .shelf-pill-chevron {
-  transform: rotate(180deg);
-  color: var(--rose-deep);
-}
+.spine-unshelved::after { display: none; }
 
-.shelf-pill-add {
-  justify-content: center;
-  color: var(--ink-soft);
-  font-weight: 600;
-  border: 1.5px dashed var(--ink-soft);
-  border-radius: 999px;
+.spine-add {
   background: transparent;
+  border: 1.5px dashed var(--ink-soft);
+  color: var(--ink-soft);
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  height: 76px;
+  align-self: flex-end;
+  box-shadow: none;
 }
-.shelf-pill-add::before { display: none; }
-.shelf-pill-add:hover { color: var(--ink); border-color: var(--ink); }
+.spine-add::after { display: none; }
+.spine-add:hover { color: var(--ink); border-color: var(--ink); }
 
-.shelf-panel {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.28s ease;
+.shelf-plank {
+  height: 15px;
+  margin: 0 0.25rem;
+  background: var(--ink);
+  border-radius: 0 0 3px 3px;
+  box-shadow: 0 6px 10px rgba(59,38,53,0.28);
 }
-.shelf-pill-group.open .shelf-panel {
-  grid-template-rows: 1fr;
-}
-.shelf-panel-inner {
-  overflow: hidden;
-  min-height: 0;
-  padding: 0 0.9rem 0.9rem;
+
+.shelf-contents {
+  min-height: 4rem;
 }
 
 .shelf-hint {
@@ -421,23 +419,36 @@ main {
   font-style: italic;
   font-family: var(--font-display);
   text-align: center;
-  padding: 1rem;
+  padding: 1.5rem 1rem;
 }
 
-.shelf-panel-actions {
+.shelf-header {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+.shelf-header h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  margin: 0;
+}
+.shelf-count {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+.shelf-actions {
   display: flex;
   gap: 0.4rem;
-  justify-content: flex-end;
-  padding: 0.5rem 0 0.6rem;
-  border-top: 1px dashed var(--rule);
-  margin-top: 0.1rem;
+  margin-left: auto;
 }
 .shelf-action-btn {
   font-size: 0.72rem;
   padding: 0.3rem 0.6rem;
 }
 
-/* ---- Shelf list rows (compact, unlike the full catalog cards) ---- */
+/* ---- Shelf list rows (compact pills, unlike the full catalog cards) ---- */
 
 .shelf-row-list {
   display: flex;

@@ -25,7 +25,7 @@
 
   // ---- View state ----
   let view = 'catalog';   // 'catalog' | 'shelves'
-  let openShelves = new Set(); // keys ('unshelved' | shelf name) currently unrolled — any number at once
+  let activeShelf = null; // 'unshelved' | a shelf name | null (nothing pulled down yet)
 
   function loadEntries() {
     try {
@@ -192,7 +192,8 @@
   const viewTabs = document.querySelectorAll('.view-tab');
   const catalogView = document.getElementById('catalogView');
   const shelvesView = document.getElementById('shelvesView');
-  const shelfPillbox = document.getElementById('shelfPillbox');
+  const bookshelfRail = document.getElementById('bookshelfRail');
+  const shelfContents = document.getElementById('shelfContents');
 
   const SPINE_PALETTE = ['var(--rose-deep)', 'var(--gold)', '#6E9B6E', '#5C8DBF', 'var(--coral)', 'var(--ink)'];
 
@@ -448,119 +449,135 @@
     renderAoTagRail();
     renderFilterCount();
 
-    renderShelfPills();
+    renderBookshelf();
+    if (view === 'shelves') renderShelfContents();
   }
 
   // ---- Shelves view ----
-  // Each shelf is an "unrollable" pill: tap it to expand/collapse a compact
-  // list of its fics inline. Any number can be open at once.
 
-  function renderShelfPills() {
-    if (!shelfPillbox) return;
-    shelfPillbox.innerHTML = '';
+  function spineWidth(key) {
+    return 30 + (hashString(key) % 5) * 4; // 30–46px, stable per shelf name
+  }
+
+  function renderBookshelf() {
+    if (!bookshelfRail) return;
+    bookshelfRail.innerHTML = '';
 
     const items = [{ key: 'unshelved', label: 'Unshelved', special: true }]
       .concat(shelves.map(name => ({ key: name, label: name })));
 
     items.forEach(item => {
-      const list = item.special
-        ? entries.filter(e => entryShelves(e).length === 0)
-        : entries.filter(e => entryShelves(e).includes(item.key));
-      const isOpen = openShelves.has(item.key);
+      const count = item.special
+        ? entries.filter(e => entryShelves(e).length === 0).length
+        : entries.filter(e => entryShelves(e).includes(item.key)).length;
 
-      const group = document.createElement('div');
-      group.className = 'shelf-pill-group' + (isOpen ? ' open' : '');
-
-      const pill = document.createElement('button');
-      pill.type = 'button';
-      pill.className = 'shelf-pill' + (item.special ? ' shelf-pill-unshelved' : '') + (isOpen ? ' active' : '');
+      const spine = document.createElement('button');
+      spine.type = 'button';
+      spine.className = 'spine' + (item.special ? ' spine-unshelved' : '') + (activeShelf === item.key ? ' active' : '');
       if (!item.special) {
-        pill.style.setProperty('--pill-accent', SPINE_PALETTE[hashString(item.key) % SPINE_PALETTE.length]);
+        spine.style.background = SPINE_PALETTE[hashString(item.key) % SPINE_PALETTE.length];
       }
-      pill.setAttribute('aria-expanded', String(isOpen));
-
-      const label = document.createElement('span');
-      label.className = 'shelf-pill-label';
-      label.textContent = item.label;
-      pill.appendChild(label);
-
-      const count = document.createElement('span');
-      count.className = 'shelf-pill-count';
-      count.textContent = String(list.length);
-      pill.appendChild(count);
-
-      const chevron = document.createElement('span');
-      chevron.className = 'shelf-pill-chevron';
-      chevron.setAttribute('aria-hidden', 'true');
-      chevron.textContent = '⌄';
-      pill.appendChild(chevron);
-
-      pill.addEventListener('click', () => {
-        if (openShelves.has(item.key)) openShelves.delete(item.key);
-        else openShelves.add(item.key);
-        renderShelfPills();
+      spine.style.setProperty('--spine-w', spineWidth(item.key) + 'px');
+      spine.title = `${item.label} (${count})`;
+      spine.addEventListener('click', () => {
+        activeShelf = item.key;
+        renderBookshelf();
+        renderShelfContents();
       });
 
-      group.appendChild(pill);
+      const label = document.createElement('span');
+      label.className = 'spine-label';
+      label.textContent = item.label;
+      spine.appendChild(label);
 
-      const panel = document.createElement('div');
-      panel.className = 'shelf-panel';
-      const inner = document.createElement('div');
-      inner.className = 'shelf-panel-inner';
+      const badge = document.createElement('span');
+      badge.className = 'spine-count';
+      badge.textContent = String(count);
+      spine.appendChild(badge);
 
-      if (isOpen) {
-        if (!item.special) {
-          const actions = document.createElement('div');
-          actions.className = 'shelf-panel-actions';
-
-          const renameBtn = document.createElement('button');
-          renameBtn.type = 'button';
-          renameBtn.className = 'btn-ghost shelf-action-btn';
-          renameBtn.textContent = 'Rename';
-          renameBtn.addEventListener('click', () => renameShelf(item.key));
-
-          const deleteBtn = document.createElement('button');
-          deleteBtn.type = 'button';
-          deleteBtn.className = 'btn-ghost shelf-action-btn';
-          deleteBtn.textContent = 'Delete';
-          deleteBtn.addEventListener('click', () => deleteShelf(item.key));
-
-          actions.appendChild(renameBtn);
-          actions.appendChild(deleteBtn);
-          inner.appendChild(actions);
-        }
-
-        if (list.length === 0) {
-          const empty = document.createElement('p');
-          empty.className = 'shelf-hint';
-          empty.textContent = item.special
-            ? 'Nothing unshelved — everything has a home.'
-            : 'Nothing filed here yet — use a card\'s shelf picker to add one.';
-          inner.appendChild(empty);
-        } else {
-          const rowList = document.createElement('div');
-          rowList.className = 'shelf-row-list';
-          list.forEach(entry => rowList.appendChild(buildShelfRow(entry)));
-          inner.appendChild(rowList);
-        }
-      }
-
-      panel.appendChild(inner);
-      group.appendChild(panel);
-      shelfPillbox.appendChild(group);
+      bookshelfRail.appendChild(spine);
     });
 
-    const addPill = document.createElement('button');
-    addPill.type = 'button';
-    addPill.className = 'shelf-pill shelf-pill-add';
-    addPill.textContent = '+ new shelf';
-    addPill.addEventListener('click', addShelf);
-    shelfPillbox.appendChild(addPill);
+    const addSpine = document.createElement('button');
+    addSpine.type = 'button';
+    addSpine.className = 'spine spine-add';
+    addSpine.title = 'Add a new shelf';
+    addSpine.textContent = '+';
+    addSpine.addEventListener('click', addShelf);
+    bookshelfRail.appendChild(addSpine);
   }
 
-  // Compact row for a fic inside an unrolled shelf pill — lighter than the
-  // full catalog card (no tag editor, notes, or shelf picker), just enough
-  // to identify and jump to the fic.
+  function renderShelfContents() {
+    if (!shelfContents) return;
+    shelfContents.innerHTML = '';
+
+    if (!activeShelf) {
+      const hint = document.createElement('p');
+      hint.className = 'shelf-hint';
+      hint.textContent = 'Tap a spine to pull that shelf down.';
+      shelfContents.appendChild(hint);
+      return;
+    }
+
+    const isUnshelved = activeShelf === 'unshelved';
+    const list = isUnshelved
+      ? entries.filter(e => entryShelves(e).length === 0)
+      : entries.filter(e => entryShelves(e).includes(activeShelf));
+
+    const header = document.createElement('div');
+    header.className = 'shelf-header';
+
+    const heading = document.createElement('h2');
+    heading.textContent = isUnshelved ? 'Unshelved' : activeShelf;
+    header.appendChild(heading);
+
+    const count = document.createElement('span');
+    count.className = 'shelf-count';
+    count.textContent = `${list.length} card${list.length === 1 ? '' : 's'}`;
+    header.appendChild(count);
+
+    if (!isUnshelved) {
+      const actions = document.createElement('div');
+      actions.className = 'shelf-actions';
+
+      const renameBtn = document.createElement('button');
+      renameBtn.type = 'button';
+      renameBtn.className = 'btn-ghost shelf-action-btn';
+      renameBtn.textContent = 'Rename';
+      renameBtn.addEventListener('click', () => renameShelf(activeShelf));
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.type = 'button';
+      deleteBtn.className = 'btn-ghost shelf-action-btn';
+      deleteBtn.textContent = 'Delete';
+      deleteBtn.addEventListener('click', () => deleteShelf(activeShelf));
+
+      actions.appendChild(renameBtn);
+      actions.appendChild(deleteBtn);
+      header.appendChild(actions);
+    }
+
+    shelfContents.appendChild(header);
+
+    if (list.length === 0) {
+      const empty = document.createElement('p');
+      empty.className = 'shelf-hint';
+      empty.textContent = isUnshelved
+        ? 'Nothing unshelved — everything has a home.'
+        : 'Nothing filed here yet — use a card\'s shelf picker to add one.';
+      shelfContents.appendChild(empty);
+      return;
+    }
+
+    const rowList = document.createElement('div');
+    rowList.className = 'shelf-row-list';
+    list.forEach(entry => rowList.appendChild(buildShelfRow(entry)));
+    shelfContents.appendChild(rowList);
+  }
+
+  // Compact pill-style row for a fic pulled down from a shelf — lighter than
+  // the full catalog card (no tag editor, notes, or shelf picker), just
+  // enough to identify and jump to the fic.
   function buildShelfRow(entry) {
     const row = document.createElement('div');
     row.className = 'shelf-row';
@@ -650,7 +667,7 @@
       shelves.push(trimmed);
       saveShelves();
     }
-    openShelves.add(trimmed);
+    activeShelf = trimmed;
     render();
   }
 
@@ -670,7 +687,7 @@
     });
     saveShelves();
     saveEntries();
-    if (openShelves.delete(oldName)) openShelves.add(trimmed);
+    activeShelf = trimmed;
     render();
   }
 
@@ -682,8 +699,7 @@
     });
     saveShelves();
     saveEntries();
-    openShelves.delete(name);
-    openShelves.add('unshelved');
+    activeShelf = 'unshelved';
     render();
   }
 
@@ -810,7 +826,8 @@
           entry.shelves = Array.from(current);
           saveEntries();
           paintSummary();
-          renderShelfPills();
+          renderBookshelf();
+          if (view === 'shelves') renderShelfContents();
         });
 
         const text = document.createElement('span');
@@ -1110,6 +1127,7 @@
       saveEntries();
       saveShelves();
       render();
+      if (view === 'shelves') { renderBookshelf(); renderShelfContents(); }
 
       showToast(
         added === 0
@@ -1249,7 +1267,10 @@
       });
       catalogView.hidden = view !== 'catalog';
       shelvesView.hidden = view !== 'shelves';
-      if (view === 'shelves') renderShelfPills();
+      if (view === 'shelves') {
+        renderBookshelf();
+        renderShelfContents();
+      }
     });
   });
 
