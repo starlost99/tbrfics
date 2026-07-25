@@ -17,7 +17,8 @@ when you tap "Info" on the AO3 userscript button.
 
 - Tapping "Info" on an AO3 work page copies the fic info to your clipboard
   (as before) *and* opens the TBR site in a new tab with the fic's title,
-  url, author, and summary in the URL.
+  url, author, summary, and metadata (rating, tags, word count, kudos,
+  chapters) in the URL.
 - The page reads those params on load, adds a new card, saves it to
   `localStorage`, then cleans the URL so refreshing won't re-add it.
 - Everything (cards + tags) lives in your browser's local storage on that

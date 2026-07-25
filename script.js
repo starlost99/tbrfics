@@ -26,6 +26,7 @@
   // ---- View state ----
   let view = 'catalog';   // 'catalog' | 'shelves'
   let activeShelf = null; // 'unshelved' | a shelf name | null (nothing pulled down yet)
+  let expandedRows = new Set(); // entry ids currently expanded to show full card details in the Shelves view
 
   function loadEntries() {
     try {
@@ -101,6 +102,8 @@
     const freeform = splitParam(params, 'freeform');
     const wordsParam = params.get('words');
     const words = wordsParam ? parseInt(wordsParam, 10) : null;
+    const kudosParam = params.get('kudos');
+    const kudos = kudosParam ? parseInt(kudosParam, 10) : null;
     const chapters = params.get('chapters') || '';
     const completeParam = params.get('complete');
     const complete = completeParam === '1' ? true : completeParam === '0' ? false : null;
@@ -129,6 +132,7 @@
         characters,
         freeform,
         words,
+        kudos,
         chapters,
         complete,
         aoTags, // kept for any entries filed under the old userscript
@@ -144,7 +148,7 @@
         title, authors, summary,
         rating, warnings, category,
         fandoms, relationships, characters, freeform,
-        words, chapters, complete,
+        words, kudos, chapters, complete,
       });
       saveEntries();
       pendingToast = chapters && chapters !== prevChapters
@@ -419,6 +423,11 @@
     return n.toLocaleString() + (n === 1 ? ' word' : ' words');
   }
 
+  function formatCount(n) {
+    if (n === null || n === undefined || isNaN(n)) return '';
+    return n.toLocaleString();
+  }
+
   // Normalizes an AO3 rating string to a short CSS-friendly class suffix
   function ratingClass(rating) {
     const r = rating.toLowerCase();
@@ -575,12 +584,21 @@
     shelfContents.appendChild(rowList);
   }
 
-  // Compact pill-style row for a fic pulled down from a shelf — lighter than
-  // the full catalog card (no tag editor, notes, or shelf picker), just
-  // enough to identify and jump to the fic.
+  // Compact pill-style row for a fic pulled down from a shelf. Tap it to
+  // unroll the full catalog card (tags, notes, summary, AO3 tags, etc.)
+  // right underneath; tap again to collapse. The thumbnail and title links
+  // still navigate to AO3 as normal instead of toggling.
   function buildShelfRow(entry) {
+    const wrap = document.createElement('div');
+    wrap.className = 'shelf-row-wrap';
+
+    const isOpen = expandedRows.has(entry.id);
+
     const row = document.createElement('div');
-    row.className = 'shelf-row';
+    row.className = 'shelf-row' + (isOpen ? ' open' : '');
+    row.tabIndex = 0;
+    row.setAttribute('role', 'button');
+    row.setAttribute('aria-expanded', String(isOpen));
 
     const hasUrl = !!entry.url;
     const thumb = document.createElement(hasUrl ? 'a' : 'span');
@@ -633,7 +651,15 @@
     const wordsText = formatWords(entry.words);
     if (wordsText) {
       const span = document.createElement('span');
-      span.textContent = `${wordsText} words`;
+      span.textContent = wordsText;
+      meta.appendChild(span);
+    }
+
+    const kudosText = formatCount(entry.kudos);
+    if (kudosText) {
+      const span = document.createElement('span');
+      span.className = 'shelf-row-kudos';
+      span.textContent = `♥ ${kudosText}`;
       meta.appendChild(span);
     }
 
@@ -655,7 +681,40 @@
 
     if (meta.children.length) main.appendChild(meta);
     row.appendChild(main);
-    return row;
+
+    const chevron = document.createElement('span');
+    chevron.className = 'shelf-row-chevron';
+    chevron.setAttribute('aria-hidden', 'true');
+    chevron.textContent = '⌄';
+    row.appendChild(chevron);
+
+    row.addEventListener('click', (e) => {
+      if (e.target.closest('a')) return; // let the thumb/title links navigate normally
+      toggleShelfRow(entry.id);
+    });
+    row.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleShelfRow(entry.id);
+      }
+    });
+
+    wrap.appendChild(row);
+
+    if (isOpen) {
+      const detail = document.createElement('div');
+      detail.className = 'shelf-row-detail';
+      detail.appendChild(buildCard(entry));
+      wrap.appendChild(detail);
+    }
+
+    return wrap;
+  }
+
+  function toggleShelfRow(id) {
+    if (expandedRows.has(id)) expandedRows.delete(id);
+    else expandedRows.add(id);
+    renderShelfContents();
   }
 
   function addShelf() {
@@ -903,6 +962,14 @@
       const badge = document.createElement('span');
       badge.className = 'badge badge-words';
       badge.textContent = wordsText;
+      wrap.appendChild(badge);
+    }
+
+    const kudosText = formatCount(entry.kudos);
+    if (kudosText) {
+      const badge = document.createElement('span');
+      badge.className = 'badge badge-kudos';
+      badge.textContent = `♥ ${kudosText}`;
       wrap.appendChild(badge);
     }
 
@@ -1173,6 +1240,7 @@
         characters: data.characters || entry.characters,
         freeform: data.freeform || entry.freeform,
         words: data.words != null ? data.words : entry.words,
+        kudos: data.kudos != null ? data.kudos : entry.kudos,
         chapters: data.chapters || entry.chapters,
         complete: data.complete != null ? data.complete : entry.complete,
       });
