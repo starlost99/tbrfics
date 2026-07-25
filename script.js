@@ -125,6 +125,12 @@
     const completeParam = params.get('complete');
     const complete = completeParam === '1' ? true : completeParam === '0' ? false : null;
 
+    // Date uploaded (one-shots) / date the last chapter was posted (chaptered
+    // fics) — AO3's "Published:" and "Updated:"/"Completed:" rows, as plain
+    // YYYY-MM-DD strings.
+    const published = params.get('published') || '';
+    const updated = params.get('updated') || '';
+
     // Legacy fallback: older userscript versions sent one flat aoTags list
     const aoTagsParam = params.get('aoTags');
     const aoTags = aoTagsParam ? aoTagsParam.split(',').map(t => t.trim()).filter(Boolean) : [];
@@ -152,6 +158,8 @@
         kudos,
         chapters,
         complete,
+        published,
+        updated,
         aoTags, // kept for any entries filed under the old userscript
         dateAdded: new Date().toISOString(),
       });
@@ -166,6 +174,7 @@
         rating, warnings, category,
         fandoms, relationships, characters, freeform,
         words, kudos, chapters, complete,
+        published, updated,
       });
       saveEntries();
       pendingToast = chapters && chapters !== prevChapters
@@ -494,6 +503,17 @@
   function formatDate(iso) {
     const d = new Date(iso);
     return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  // AO3's Published/Updated/Completed dates come through as plain
+  // "YYYY-MM-DD" strings. Parsing those directly with `new Date()` treats
+  // them as UTC midnight, which can shift the displayed day backward in
+  // negative-UTC-offset timezones — so parse the parts as a local date instead.
+  function formatSimpleDate(dateStr) {
+    if (!dateStr) return '';
+    const [y, m, d] = dateStr.split('-').map(Number);
+    if (!y || !m || !d) return '';
+    return new Date(y, m - 1, d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
   function formatWords(n) {
@@ -1110,6 +1130,17 @@
       wrap.appendChild(badge);
     }
 
+    const isOneShot = entry.chapters === '1/1';
+    const dateLabel = isOneShot ? 'Published' : (entry.complete ? 'Completed' : 'Updated');
+    const dateValue = isOneShot ? entry.published : (entry.updated || entry.published);
+    const dateText = formatSimpleDate(dateValue);
+    if (dateText) {
+      const badge = document.createElement('span');
+      badge.className = 'badge badge-date';
+      badge.textContent = `${dateLabel} ${dateText}`;
+      wrap.appendChild(badge);
+    }
+
     const hasWarnings = entry.warnings && entry.warnings.length &&
       !(entry.warnings.length === 1 && /no archive warnings apply/i.test(entry.warnings[0]));
     if (hasWarnings) {
@@ -1373,6 +1404,8 @@
         kudos: data.kudos != null ? data.kudos : entry.kudos,
         chapters: data.chapters || entry.chapters,
         complete: data.complete != null ? data.complete : entry.complete,
+        published: data.published || entry.published,
+        updated: data.updated || entry.updated,
       });
       saveEntries();
       render();
@@ -1452,6 +1485,8 @@
       words: null,
       chapters: '',
       complete: null,
+      published: '',
+      updated: '',
       aoTags: [],
       dateAdded: new Date().toISOString(),
     });

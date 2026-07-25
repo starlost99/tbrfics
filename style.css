@@ -858,7 +858,8 @@ main {
 }
 
 .badge-words,
-.badge-chapters {
+.badge-chapters,
+.badge-date {
   background: var(--bg);
   color: var(--ink-soft);
   border: 1px solid var(--rule);
