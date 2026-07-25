@@ -33,63 +33,68 @@
   </div>
 
   <section class="controls">
-    <div class="search-row">
-      <input type="search" id="searchInput" placeholder="search title, author, fandom, tags…" autocomplete="off">
-    </div>
-    <div class="tag-rail" id="tagRail">
-      <!-- your own tag filter chips injected here -->
-    </div>
-
-    <details class="filter-panel" id="filterPanel">
-      <summary>Filters <span class="filter-count" id="filterCount" hidden></span></summary>
-      <div class="filter-body">
-        <div class="filter-group">
-          <p class="filter-label">Sort by</p>
-          <select id="sortSelect" class="sort-select">
-            <option value="dateAdded-desc">Date added (newest first)</option>
-            <option value="dateAdded-asc">Date added (oldest first)</option>
-            <option value="published-desc">Date published (newest first)</option>
-            <option value="published-asc">Date published (oldest first)</option>
-            <option value="title-asc">Title (A–Z)</option>
-            <option value="title-desc">Title (Z–A)</option>
-            <option value="words-desc">Word count (highest first)</option>
-            <option value="words-asc">Word count (lowest first)</option>
-            <option value="kudos-desc">Kudos (highest first)</option>
-            <option value="stars-desc">Your rating (highest first)</option>
-          </select>
+    <details class="controls-collapse" id="controlsCollapse" open>
+      <summary class="controls-summary" id="controlsSummary">Search &amp; filters</summary>
+      <div class="controls-collapse-body">
+        <div class="search-row">
+          <input type="search" id="searchInput" placeholder="search title, author, fandom, tags…" autocomplete="off">
+        </div>
+        <div class="tag-rail" id="tagRail">
+          <!-- your own tag filter chips injected here -->
         </div>
 
-        <div class="filter-group">
-          <p class="filter-label">Rating</p>
-          <div class="chip-row" id="ratingRail"></div>
-        </div>
+        <details class="filter-panel" id="filterPanel">
+          <summary>Filters <span class="filter-count" id="filterCount" hidden></span></summary>
+          <div class="filter-body">
+            <div class="filter-group">
+              <p class="filter-label">Sort by</p>
+              <select id="sortSelect" class="sort-select">
+                <option value="dateAdded-desc">Date added (newest first)</option>
+                <option value="dateAdded-asc">Date added (oldest first)</option>
+                <option value="published-desc">Date published (newest first)</option>
+                <option value="published-asc">Date published (oldest first)</option>
+                <option value="title-asc">Title (A–Z)</option>
+                <option value="title-desc">Title (Z–A)</option>
+                <option value="words-desc">Word count (highest first)</option>
+                <option value="words-asc">Word count (lowest first)</option>
+                <option value="kudos-desc">Kudos (highest first)</option>
+                <option value="stars-desc">Your rating (highest first)</option>
+              </select>
+            </div>
 
-        <div class="filter-group">
-          <p class="filter-label">Status</p>
-          <div class="chip-row" id="statusRail"></div>
-        </div>
+            <div class="filter-group">
+              <p class="filter-label">Rating</p>
+              <div class="chip-row" id="ratingRail"></div>
+            </div>
 
-        <div class="filter-group">
-          <p class="filter-label">Your rating</p>
-          <div class="chip-row" id="starRail"></div>
-        </div>
+            <div class="filter-group">
+              <p class="filter-label">Status</p>
+              <div class="chip-row" id="statusRail"></div>
+            </div>
 
-        <div class="filter-group">
-          <p class="filter-label">Word count</p>
-          <div class="range-row">
-            <input type="number" id="wordMinInput" placeholder="min" min="0" inputmode="numeric">
-            <span class="range-dash">–</span>
-            <input type="number" id="wordMaxInput" placeholder="max" min="0" inputmode="numeric">
+            <div class="filter-group">
+              <p class="filter-label">Your rating</p>
+              <div class="chip-row" id="starRail"></div>
+            </div>
+
+            <div class="filter-group">
+              <p class="filter-label">Word count</p>
+              <div class="range-row">
+                <input type="number" id="wordMinInput" placeholder="min" min="0" inputmode="numeric">
+                <span class="range-dash">–</span>
+                <input type="number" id="wordMaxInput" placeholder="max" min="0" inputmode="numeric">
+              </div>
+            </div>
+
+            <div class="filter-group">
+              <p class="filter-label">Fandom, relationship, character &amp; additional tags</p>
+              <input type="search" id="aoTagSearch" placeholder="search tags…" autocomplete="off">
+              <div class="chip-row" id="aoTagRail"></div>
+            </div>
+
+            <button type="button" id="clearFiltersBtn" class="btn-ghost btn-clear-filters">Clear filters</button>
           </div>
-        </div>
-
-        <div class="filter-group">
-          <p class="filter-label">Fandom, relationship, character &amp; additional tags</p>
-          <input type="search" id="aoTagSearch" placeholder="search tags…" autocomplete="off">
-          <div class="chip-row" id="aoTagRail"></div>
-        </div>
-
-        <button type="button" id="clearFiltersBtn" class="btn-ghost btn-clear-filters">Clear filters</button>
+        </details>
       </div>
     </details>
   </section>
@@ -98,6 +103,7 @@
     <section id="cardGrid" class="card-grid">
       <!-- fic cards injected here -->
     </section>
+
 
     <div id="emptyState" class="empty-state" hidden>
       <p class="empty-title">the drawer's empty</p>

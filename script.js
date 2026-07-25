@@ -221,6 +221,7 @@
   const clearFiltersBtn = document.getElementById('clearFiltersBtn');
   const filterPanel = document.getElementById('filterPanel');
   const viewTabs = document.querySelectorAll('.view-tab');
+  const controlsCollapse = document.getElementById('controlsCollapse');
   const catalogView = document.getElementById('catalogView');
   const shelvesView = document.getElementById('shelvesView');
   const bookshelfRail = document.getElementById('bookshelfRail');
@@ -1520,6 +1521,8 @@
       });
       catalogView.hidden = view !== 'catalog';
       shelvesView.hidden = view !== 'shelves';
+      controlsCollapse.classList.toggle('shelves-mode', view === 'shelves');
+      controlsCollapse.open = view === 'catalog';
       if (view === 'shelves') {
         renderBookshelf();
         renderShelfContents();

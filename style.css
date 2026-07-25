@@ -145,6 +145,28 @@ main {
   margin-bottom: 0.5rem;
 }
 
+.controls-summary {
+  display: none;
+}
+.controls-collapse.shelves-mode {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.controls-collapse.shelves-mode > .controls-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+}
+.controls-collapse.shelves-mode > .controls-collapse-body {
+  padding: 0 0.9rem 0.9rem;
+}
+
 #searchInput {
   width: 100%;
   padding: 0.7rem 0.9rem;
