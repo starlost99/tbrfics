@@ -20,54 +20,71 @@
 </header>
 
 <main>
-  <section class="controls">
-    <div class="search-row">
-      <input type="search" id="searchInput" placeholder="search title, author, fandom, tags…" autocomplete="off">
-    </div>
-    <div class="tag-rail" id="tagRail">
-      <!-- your own tag filter chips injected here -->
-    </div>
+  <div class="view-tabs" role="tablist">
+    <button type="button" class="view-tab active" data-view="catalog" role="tab" aria-selected="true">Catalog</button>
+    <button type="button" class="view-tab" data-view="shelves" role="tab" aria-selected="false">Shelves</button>
+  </div>
 
-    <details class="filter-panel" id="filterPanel">
-      <summary>Filters <span class="filter-count" id="filterCount" hidden></span></summary>
-      <div class="filter-body">
-        <div class="filter-group">
-          <p class="filter-label">Rating</p>
-          <div class="chip-row" id="ratingRail"></div>
-        </div>
-
-        <div class="filter-group">
-          <p class="filter-label">Status</p>
-          <div class="chip-row" id="statusRail"></div>
-        </div>
-
-        <div class="filter-group">
-          <p class="filter-label">Word count</p>
-          <div class="range-row">
-            <input type="number" id="wordMinInput" placeholder="min" min="0" inputmode="numeric">
-            <span class="range-dash">–</span>
-            <input type="number" id="wordMaxInput" placeholder="max" min="0" inputmode="numeric">
-          </div>
-        </div>
-
-        <div class="filter-group">
-          <p class="filter-label">Fandom, relationship, character &amp; additional tags</p>
-          <input type="search" id="aoTagSearch" placeholder="search tags…" autocomplete="off">
-          <div class="chip-row" id="aoTagRail"></div>
-        </div>
-
-        <button type="button" id="clearFiltersBtn" class="btn-ghost btn-clear-filters">Clear filters</button>
+  <div id="catalogView">
+    <section class="controls">
+      <div class="search-row">
+        <input type="search" id="searchInput" placeholder="search title, author, fandom, tags…" autocomplete="off">
       </div>
-    </details>
-  </section>
+      <div class="tag-rail" id="tagRail">
+        <!-- your own tag filter chips injected here -->
+      </div>
 
-  <section id="cardGrid" class="card-grid">
-    <!-- fic cards injected here -->
-  </section>
+      <details class="filter-panel" id="filterPanel">
+        <summary>Filters <span class="filter-count" id="filterCount" hidden></span></summary>
+        <div class="filter-body">
+          <div class="filter-group">
+            <p class="filter-label">Rating</p>
+            <div class="chip-row" id="ratingRail"></div>
+          </div>
 
-  <div id="emptyState" class="empty-state" hidden>
-    <p class="empty-title">the drawer's empty</p>
-    <p class="empty-body">Tap "Info" on an AO3 work page to file it here, or add one below.</p>
+          <div class="filter-group">
+            <p class="filter-label">Status</p>
+            <div class="chip-row" id="statusRail"></div>
+          </div>
+
+          <div class="filter-group">
+            <p class="filter-label">Word count</p>
+            <div class="range-row">
+              <input type="number" id="wordMinInput" placeholder="min" min="0" inputmode="numeric">
+              <span class="range-dash">–</span>
+              <input type="number" id="wordMaxInput" placeholder="max" min="0" inputmode="numeric">
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <p class="filter-label">Fandom, relationship, character &amp; additional tags</p>
+            <input type="search" id="aoTagSearch" placeholder="search tags…" autocomplete="off">
+            <div class="chip-row" id="aoTagRail"></div>
+          </div>
+
+          <button type="button" id="clearFiltersBtn" class="btn-ghost btn-clear-filters">Clear filters</button>
+        </div>
+      </details>
+    </section>
+
+    <section id="cardGrid" class="card-grid">
+      <!-- fic cards injected here -->
+    </section>
+
+    <div id="emptyState" class="empty-state" hidden>
+      <p class="empty-title">the drawer's empty</p>
+      <p class="empty-body">Tap "Info" on an AO3 work page to file it here, or add one below.</p>
+    </div>
+  </div>
+
+  <div id="shelvesView" hidden>
+    <div class="bookshelf-wrap">
+      <div class="bookshelf-rail" id="bookshelfRail"></div>
+      <div class="shelf-plank"></div>
+    </div>
+    <div id="shelfContents" class="shelf-contents">
+      <p class="shelf-hint">Tap a spine to pull that shelf down.</p>
+    </div>
   </div>
 </main>
 
@@ -96,6 +113,9 @@
     <div class="card-stub">
       <span class="stub-date"></span>
       <button class="stub-remove" title="Remove from stacks">✕</button>
+    </div>
+    <div class="card-shelf">
+      <select class="shelf-select" title="Move to a shelf"></select>
     </div>
     <h3 class="card-title"><a target="_blank" rel="noopener"></a></h3>
     <p class="card-byline">by <span class="card-authors"></span></p>

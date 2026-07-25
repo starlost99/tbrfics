@@ -2,7 +2,9 @@
   'use strict';
 
   const STORE_KEY = 'tbr-stacks-v1';
+  const SHELVES_STORE_KEY = 'tbr-stacks-shelves-v1';
   let entries = loadEntries();
+  let shelves = loadShelves(); // array of shelf names, in creation order — a fic lives on at most one
 
   // ---- Filter state ----
   let activeTags = new Set();      // your own custom tags — OR match
@@ -12,6 +14,10 @@
   let wordMax = null;
   let activeAoTags = new Set();    // fandom/relationship/character/freeform — AND match
   let aoTagQuery = '';
+
+  // ---- View state ----
+  let view = 'catalog';   // 'catalog' | 'shelves'
+  let activeShelf = null; // 'unshelved' | a shelf name | null (nothing pulled down yet)
 
   function loadEntries() {
     try {
@@ -24,6 +30,24 @@
 
   function saveEntries() {
     localStorage.setItem(STORE_KEY, JSON.stringify(entries));
+  }
+
+  function loadShelves() {
+    try {
+      const raw = localStorage.getItem(SHELVES_STORE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveShelves() {
+    localStorage.setItem(SHELVES_STORE_KEY, JSON.stringify(shelves));
+  }
+
+  // A fic with no shelf assignment lives on the always-present "unshelved" shelf
+  function entryShelf(entry) {
+    return entry.shelf || 'unshelved';
   }
 
   function uid() {
@@ -75,6 +99,7 @@
         summary,
         tags,
         notes: '',
+        shelf: null,
         rating,
         warnings,
         category,
@@ -112,6 +137,19 @@
   const filterCount = document.getElementById('filterCount');
   const clearFiltersBtn = document.getElementById('clearFiltersBtn');
   const filterPanel = document.getElementById('filterPanel');
+  const viewTabs = document.querySelectorAll('.view-tab');
+  const catalogView = document.getElementById('catalogView');
+  const shelvesView = document.getElementById('shelvesView');
+  const bookshelfRail = document.getElementById('bookshelfRail');
+  const shelfContents = document.getElementById('shelfContents');
+
+  const SPINE_PALETTE = ['var(--rose-deep)', 'var(--gold)', '#6E9B6E', '#5C8DBF', 'var(--coral)', 'var(--ink)'];
+
+  function hashString(str) {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+    return h;
+  }
 
   function allTags() {
     const set = new Set();
@@ -337,6 +375,167 @@
     renderStatusRail();
     renderAoTagRail();
     renderFilterCount();
+
+    renderBookshelf();
+    if (view === 'shelves') renderShelfContents();
+  }
+
+  // ---- Shelves view ----
+
+  function spineWidth(key) {
+    return 30 + (hashString(key) % 5) * 4; // 30–46px, stable per shelf name
+  }
+
+  function renderBookshelf() {
+    if (!bookshelfRail) return;
+    bookshelfRail.innerHTML = '';
+
+    const items = [{ key: 'unshelved', label: 'Unshelved', special: true }]
+      .concat(shelves.map(name => ({ key: name, label: name })));
+
+    items.forEach(item => {
+      const count = entries.filter(e => entryShelf(e) === item.key).length;
+
+      const spine = document.createElement('button');
+      spine.type = 'button';
+      spine.className = 'spine' + (item.special ? ' spine-unshelved' : '') + (activeShelf === item.key ? ' active' : '');
+      if (!item.special) {
+        spine.style.background = SPINE_PALETTE[hashString(item.key) % SPINE_PALETTE.length];
+      }
+      spine.style.setProperty('--spine-w', spineWidth(item.key) + 'px');
+      spine.title = `${item.label} (${count})`;
+      spine.addEventListener('click', () => {
+        activeShelf = item.key;
+        renderBookshelf();
+        renderShelfContents();
+      });
+
+      const label = document.createElement('span');
+      label.className = 'spine-label';
+      label.textContent = item.label;
+      spine.appendChild(label);
+
+      const badge = document.createElement('span');
+      badge.className = 'spine-count';
+      badge.textContent = String(count);
+      spine.appendChild(badge);
+
+      bookshelfRail.appendChild(spine);
+    });
+
+    const addSpine = document.createElement('button');
+    addSpine.type = 'button';
+    addSpine.className = 'spine spine-add';
+    addSpine.title = 'Add a new shelf';
+    addSpine.textContent = '+';
+    addSpine.addEventListener('click', addShelf);
+    bookshelfRail.appendChild(addSpine);
+  }
+
+  function renderShelfContents() {
+    if (!shelfContents) return;
+    shelfContents.innerHTML = '';
+
+    if (!activeShelf) {
+      const hint = document.createElement('p');
+      hint.className = 'shelf-hint';
+      hint.textContent = 'Tap a spine to pull that shelf down.';
+      shelfContents.appendChild(hint);
+      return;
+    }
+
+    const isUnshelved = activeShelf === 'unshelved';
+    const list = entries.filter(e => entryShelf(e) === activeShelf);
+
+    const header = document.createElement('div');
+    header.className = 'shelf-header';
+
+    const heading = document.createElement('h2');
+    heading.textContent = isUnshelved ? 'Unshelved' : activeShelf;
+    header.appendChild(heading);
+
+    const count = document.createElement('span');
+    count.className = 'shelf-count';
+    count.textContent = `${list.length} card${list.length === 1 ? '' : 's'}`;
+    header.appendChild(count);
+
+    if (!isUnshelved) {
+      const actions = document.createElement('div');
+      actions.className = 'shelf-actions';
+
+      const renameBtn = document.createElement('button');
+      renameBtn.type = 'button';
+      renameBtn.className = 'btn-ghost shelf-action-btn';
+      renameBtn.textContent = 'Rename';
+      renameBtn.addEventListener('click', () => renameShelf(activeShelf));
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.type = 'button';
+      deleteBtn.className = 'btn-ghost shelf-action-btn';
+      deleteBtn.textContent = 'Delete';
+      deleteBtn.addEventListener('click', () => deleteShelf(activeShelf));
+
+      actions.appendChild(renameBtn);
+      actions.appendChild(deleteBtn);
+      header.appendChild(actions);
+    }
+
+    shelfContents.appendChild(header);
+
+    if (list.length === 0) {
+      const empty = document.createElement('p');
+      empty.className = 'shelf-hint';
+      empty.textContent = isUnshelved
+        ? 'Nothing unshelved — everything has a home.'
+        : 'Nothing filed here yet — use a card\'s shelf picker to add one.';
+      shelfContents.appendChild(empty);
+      return;
+    }
+
+    const grid = document.createElement('div');
+    grid.className = 'card-grid';
+    list.forEach(entry => grid.appendChild(buildCard(entry)));
+    shelfContents.appendChild(grid);
+  }
+
+  function addShelf() {
+    const name = prompt('Name this shelf:');
+    if (name === null) return;
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    if (!shelves.includes(trimmed)) {
+      shelves.push(trimmed);
+      saveShelves();
+    }
+    activeShelf = trimmed;
+    render();
+  }
+
+  function renameShelf(oldName) {
+    const name = prompt('Rename shelf:', oldName);
+    if (name === null) return;
+    const trimmed = name.trim();
+    if (!trimmed || trimmed === oldName) return;
+    if (shelves.includes(trimmed)) {
+      alert('A shelf with that name already exists.');
+      return;
+    }
+    shelves = shelves.map(s => (s === oldName ? trimmed : s));
+    entries.forEach(e => { if (e.shelf === oldName) e.shelf = trimmed; });
+    saveShelves();
+    saveEntries();
+    activeShelf = trimmed;
+    render();
+  }
+
+  function deleteShelf(name) {
+    if (!confirm(`Delete "${name}"? Fics on it move to Unshelved.`)) return;
+    shelves = shelves.filter(s => s !== name);
+    entries.forEach(e => { if (e.shelf === name) e.shelf = null; });
+    saveShelves();
+    saveEntries();
+    activeShelf = 'unshelved';
+    render();
   }
 
   function buildCard(entry) {
@@ -367,9 +566,37 @@
 
     setupTagInput(node, entry);
     setupNotes(node, entry);
+    setupShelfSelect(node, entry);
     setupAoTags(node, entry);
 
     return node;
+  }
+
+  // Lets a card be moved onto a shelf (or back to Unshelved) from wherever it's shown
+  function setupShelfSelect(node, entry) {
+    const select = node.querySelector('.shelf-select');
+    select.innerHTML = '';
+
+    const unshelvedOpt = document.createElement('option');
+    unshelvedOpt.value = '';
+    unshelvedOpt.textContent = 'Unshelved';
+    select.appendChild(unshelvedOpt);
+
+    shelves.forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      select.appendChild(opt);
+    });
+
+    select.value = entry.shelf || '';
+
+    select.addEventListener('change', () => {
+      entry.shelf = select.value || null;
+      saveEntries();
+      renderBookshelf();
+      if (view === 'shelves') renderShelfContents();
+    });
   }
 
   // Freeform note per card. Saves as you type (debounced) without a full
@@ -627,6 +854,7 @@
       summary: document.getElementById('f_summary').value.trim(),
       tags: document.getElementById('f_tags').value.split(',').map(t => t.trim()).filter(Boolean),
       notes: '',
+      shelf: null,
       rating: [],
       warnings: [],
       category: [],
@@ -643,6 +871,23 @@
     saveEntries();
     document.getElementById('addForm').reset();
     render();
+  });
+
+  // ---- View tabs ----
+  viewTabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+      view = btn.dataset.view;
+      viewTabs.forEach(b => {
+        b.classList.toggle('active', b.dataset.view === view);
+        b.setAttribute('aria-selected', b.dataset.view === view ? 'true' : 'false');
+      });
+      catalogView.hidden = view !== 'catalog';
+      shelvesView.hidden = view !== 'shelves';
+      if (view === 'shelves') {
+        renderBookshelf();
+        renderShelfContents();
+      }
+    });
   });
 
   // ---- Scroll to top ----
