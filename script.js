@@ -226,6 +226,33 @@
   const shelvesView = document.getElementById('shelvesView');
   const bookshelfRail = document.getElementById('bookshelfRail');
   const shelfContents = document.getElementById('shelfContents');
+  const libraryView = document.getElementById('libraryView');
+  const libraryGrid = document.getElementById('libraryGrid');
+  const libraryEmptyState = document.getElementById('libraryEmptyState');
+
+  // Cover gradients — fixed hex pairs rather than the app's CSS vars, since
+  // real book covers keep their own identity regardless of light/dark mode.
+  // Each pair is dark enough for white text; a scrim overlay (see CSS)
+  // handles legibility over the lighter ones.
+  const COVER_PALETTE = [
+    ['#A85D76', '#7A3F56'], // rose
+    ['#E0684F', '#B8432E'], // coral
+    ['#C99A4A', '#96701C'], // gold
+    ['#6E9B6E', '#4B7249'], // sage
+    ['#6FB89A', '#3F8568'], // mint
+    ['#5C8DBF', '#3A6693'], // sky
+    ['#9B87C4', '#6B5798'], // lavender
+    ['#8C5E83', '#603D5A'], // plum
+    ['#3B2635', '#1F1420'], // ink
+    ['#E39CB2', '#B85F7D'], // blush
+    ['#D98255', '#A85736'], // terracotta
+    ['#4F6D8C', '#2E4460'], // slate
+  ];
+
+  function coverGradientFor(entry) {
+    const [from, to] = COVER_PALETTE[hashString(entry.id || entry.title || '') % COVER_PALETTE.length];
+    return `linear-gradient(155deg, ${from}, ${to})`;
+  }
 
   const SPINE_PALETTE = [
     { key: 'rose', label: 'Rose', color: 'var(--rose-deep)' },
@@ -565,6 +592,7 @@
 
     renderBookshelf();
     if (view === 'shelves') renderShelfContents();
+    renderLibrary();
   }
 
   // ---- Shelves view ----
@@ -1437,6 +1465,62 @@
     }
   }
 
+  // ---- Library view ----
+  // Same filtered/sorted entry list as Catalog — the controls panel is
+  // shared across views, just collapsed by default here (see the view-tab
+  // handler below), same as Shelves.
+
+  function buildBookCover(entry) {
+    const cover = document.createElement(entry.url ? 'a' : 'div');
+    cover.className = 'book-cover';
+    if (entry.url) {
+      cover.href = entry.url;
+      cover.target = '_blank';
+      cover.rel = 'noopener';
+    }
+    cover.style.backgroundImage = coverGradientFor(entry);
+
+    const imprint = document.createElement('span');
+    imprint.className = 'book-imprint';
+    imprint.textContent = (entry.fandoms && entry.fandoms[0]) || (entry.tags && entry.tags[0]) || '';
+    cover.appendChild(imprint);
+
+    const title = document.createElement('span');
+    title.className = 'book-title';
+    title.textContent = entry.title || 'Untitled';
+    cover.appendChild(title);
+
+    const spacer = document.createElement('span');
+    spacer.className = 'book-spacer';
+    cover.appendChild(spacer);
+
+    const byline = document.createElement('span');
+    byline.className = 'book-byline';
+    byline.textContent = 'by ' + (entry.authors || 'Anonymous');
+    cover.appendChild(byline);
+
+    const meta = document.createElement('span');
+    meta.className = 'book-meta';
+    const metaBits = [];
+    if (entry.words) metaBits.push(formatWords(entry.words));
+    if (entry.stars) metaBits.push('★'.repeat(Math.round(entry.stars)));
+    meta.textContent = metaBits.join(' · ');
+    cover.appendChild(meta);
+
+    return cover;
+  }
+
+  function renderLibrary() {
+    if (!libraryGrid) return;
+    const query = searchInput.value.trim().toLowerCase();
+    const visible = sortEntries(entries.filter(e => matchesFilters(e, query)));
+
+    libraryGrid.innerHTML = '';
+    visible.forEach(entry => libraryGrid.appendChild(buildBookCover(entry)));
+
+    libraryEmptyState.hidden = entries.length !== 0;
+  }
+
   // ---- Search & filter wiring ----
   searchInput.addEventListener('input', render);
 
@@ -1521,12 +1605,14 @@
       });
       catalogView.hidden = view !== 'catalog';
       shelvesView.hidden = view !== 'shelves';
-      controlsCollapse.classList.toggle('shelves-mode', view === 'shelves');
+      libraryView.hidden = view !== 'library';
+      controlsCollapse.classList.toggle('shelves-mode', view !== 'catalog');
       controlsCollapse.open = view === 'catalog';
       if (view === 'shelves') {
         renderBookshelf();
         renderShelfContents();
       }
+      if (view === 'library') renderLibrary();
     });
   });
 

@@ -24,6 +24,7 @@
     <div class="view-tabs" role="tablist">
       <button type="button" class="view-tab active" data-view="catalog" role="tab" aria-selected="true">Catalog</button>
       <button type="button" class="view-tab" data-view="shelves" role="tab" aria-selected="false">Shelves</button>
+      <button type="button" class="view-tab" data-view="library" role="tab" aria-selected="false">Library</button>
     </div>
     <div class="data-actions">
       <button type="button" id="exportBtn" class="btn-ghost btn-data" title="Download your cards and shelves as a JSON file">Export</button>
@@ -118,6 +119,16 @@
     </div>
     <div id="shelfContents" class="shelf-contents">
       <p class="shelf-hint">Tap a spine to pull that shelf down.</p>
+    </div>
+  </div>
+
+  <div id="libraryView" hidden>
+    <section id="libraryGrid" class="library-grid">
+      <!-- generated book covers injected here -->
+    </section>
+    <div id="libraryEmptyState" class="empty-state" hidden>
+      <p class="empty-title">the shelves are bare</p>
+      <p class="empty-body">Nothing matches — try clearing a filter.</p>
     </div>
   </div>
 </main>

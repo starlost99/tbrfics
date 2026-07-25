@@ -357,6 +357,111 @@ main {
   gap: 1.1rem;
 }
 
+/* ---- Library view ---- */
+
+.library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1.5rem 1.1rem;
+}
+
+.book-cover {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  aspect-ratio: 2 / 3;
+  border-radius: 4px;
+  padding: 0.9rem 0.85rem;
+  color: #fff;
+  text-decoration: none;
+  overflow: hidden;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.18) inset,
+    -3px 0 6px rgba(0,0,0,0.18) inset,
+    0 6px 14px rgba(59,38,53,0.28);
+  transition: transform 0.15s, box-shadow 0.15s;
+  cursor: pointer;
+}
+.book-cover:hover,
+.book-cover:focus-visible {
+  transform: translateY(-4px);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.18) inset,
+    -3px 0 6px rgba(0,0,0,0.18) inset,
+    0 12px 20px rgba(59,38,53,0.34);
+}
+.book-cover::before {
+  /* scrim so white text stays legible no matter which gradient lands here */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.05) 35%, rgba(0,0,0,0.1) 60%, rgba(0,0,0,0.55) 100%);
+  pointer-events: none;
+}
+.book-cover::after {
+  /* faint page-edge texture, echoes the shelf spines */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.06) 0 1px, transparent 1px 5px);
+  pointer-events: none;
+}
+
+.book-imprint,
+.book-title,
+.book-byline,
+.book-meta {
+  position: relative;
+  z-index: 1;
+}
+
+.book-imprint {
+  font-family: var(--font-body);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.book-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.05rem;
+  line-height: 1.15;
+  margin-top: 0.5rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+
+.book-spacer {
+  flex: 1;
+}
+
+.book-byline {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 500;
+  opacity: 0.92;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.book-meta {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  opacity: 0.85;
+  margin-top: 0.15rem;
+  letter-spacing: 0.02em;
+}
+
 /* ---- Shelves view ---- */
 
 .bookshelf-wrap {
