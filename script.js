@@ -116,11 +116,41 @@
         dateAdded: new Date().toISOString(),
       });
       saveEntries();
+    } else {
+      // Fic's already on file — re-tapping "Info" on AO3 means the person
+      // wants the latest chapters/word count/etc. Refresh AO3-sourced
+      // fields only; leave their own tags, notes, stars, and shelf alone.
+      const prevChapters = dupe.chapters;
+      Object.assign(dupe, {
+        title, authors, summary,
+        rating, warnings, category,
+        fandoms, relationships, characters, freeform,
+        words, chapters, complete,
+      });
+      saveEntries();
+      pendingToast = chapters && chapters !== prevChapters
+        ? `Updated "${title}" — now ${chapters} chapters`
+        : `Refreshed "${title}"`;
     }
 
     // Clean the URL so refreshing doesn't re-add / re-run the query
     const cleanUrl = window.location.origin + window.location.pathname;
     window.history.replaceState({}, '', cleanUrl);
+  }
+
+  // ---- Toast ----
+  let pendingToast = null;
+  let toastEl = null;
+  function showToast(message) {
+    if (!toastEl) {
+      toastEl = document.createElement('div');
+      toastEl.className = 'toast';
+      document.body.appendChild(toastEl);
+    }
+    toastEl.textContent = message;
+    requestAnimationFrame(() => toastEl.classList.add('visible'));
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toastEl.classList.remove('visible'), 2400);
   }
 
   // ---- Rendering ----
@@ -570,6 +600,14 @@
     node.querySelector('.stub-date').textContent = formatDate(entry.dateAdded);
     node.querySelector('.stub-remove').addEventListener('click', () => removeEntry(entry.id));
 
+    const refreshBtn = node.querySelector('.stub-refresh');
+    if (entry.url) {
+      refreshBtn.addEventListener('click', () => window.open(entry.url, '_blank', 'noopener'));
+    } else {
+      refreshBtn.disabled = true;
+      refreshBtn.title = 'No AO3 link saved for this card';
+    }
+
     const titleLink = node.querySelector('.card-title a');
     titleLink.textContent = entry.title;
     if (entry.url) {
@@ -873,6 +911,9 @@
   }
 
   function removeEntry(entryId) {
+    const entry = entries.find(e => e.id === entryId);
+    const label = entry ? `"${entry.title}"` : 'this fic';
+    if (!window.confirm(`Remove ${label} from the stacks?`)) return;
     entries = entries.filter(e => e.id !== entryId);
     saveEntries();
     render();
@@ -974,4 +1015,5 @@
   // ---- Init ----
   ingestFromURL();
   render();
+  if (pendingToast) showToast(pendingToast);
 })();

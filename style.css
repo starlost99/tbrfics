@@ -438,6 +438,28 @@ main {
   color: var(--ink-soft);
 }
 
+.stub-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.stub-refresh {
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0.15rem 0.3rem;
+}
+.stub-refresh:hover { color: var(--rose-deep); }
+.stub-refresh:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.stub-refresh:disabled:hover { color: var(--ink-soft); }
+
 .stub-remove {
   background: none;
   border: none;
@@ -534,9 +556,9 @@ main {
 .badge-rating {
   color: var(--surface);
 }
-.badge-rating-general { background: #6E9B6E; }
-.badge-rating-teen { background: #5C8DBF; }
-.badge-rating-mature { background: #C98A3E; }
+.badge-rating-general { background: var(--gold); }
+.badge-rating-teen { background: var(--rose); }
+.badge-rating-mature { background: var(--rose-deep); }
 .badge-rating-explicit { background: var(--coral); }
 .badge-rating-notrated { background: var(--ink-soft); }
 
@@ -754,13 +776,13 @@ main {
   position: fixed;
   bottom: 1.5rem;
   right: 1.5rem;
-  width: 52px;
-  height: 52px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   background: var(--rose-deep);
   color: var(--surface);
   border: none;
-  font-size: 1.6rem;
+  font-size: 1.2rem;
   line-height: 1;
   cursor: pointer;
   box-shadow: 0 3px 10px rgba(59,38,53,0.3);
@@ -855,6 +877,31 @@ dialog h2 {
 
 @media (max-width: 520px) {
   .masthead { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 1.5rem;
+  transform: translateX(-50%) translateY(12px);
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 0.85rem;
+  font-family: var(--font-body);
+  font-weight: 500;
+  padding: 0.6rem 1.1rem;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 30;
+  max-width: calc(100% - 3rem);
+  text-align: center;
+}
+.toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 @media (prefers-reduced-motion: reduce) {
