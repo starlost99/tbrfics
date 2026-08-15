@@ -1,4 +1,5 @@
 :root {
+  color-scheme: light dark;
   --bg: #FBF0F2;
   --surface: #FFFDF9;
   --ink: #3B2635;
@@ -30,6 +31,16 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
+    --bg: #221720;
+    --surface: #2C1E2A;
+    --ink: #F1E4E9;
+    --ink-soft: #C4AAB6;
+    --rose: #E39CB2;
+    --rose-deep: #E8A5BB;
+    --gold: #E0B872;
+    --coral: #F0846C;
+    --rule: #4A3542;
+
     --rating-general-bg: #4A3B22;
     --rating-general-fg: #E9C888;
     --rating-teen-bg: #4A2E38;
@@ -44,16 +55,6 @@
     --warning-fg: #F0966F;
     --complete-bg: #2A3B28;
     --complete-fg: #9BCB94;
-  }
-    --bg: #221720;
-    --surface: #2C1E2A;
-    --ink: #F1E4E9;
-    --ink-soft: #C4AAB6;
-    --rose: #E39CB2;
-    --rose-deep: #E8A5BB;
-    --gold: #E0B872;
-    --coral: #F0846C;
-    --rule: #4A3542;
   }
 
   .pill {
