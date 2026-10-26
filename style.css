@@ -1671,3 +1671,14 @@ dialog h2 {
 .shelf-row-wrap,
 .shelf-row-list .shelf-row-wrap:first-child { animation: spine-in 0.3s ease-out both; }
 .shelf-row-wrap:hover { transform: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+
+/* ---- Shelves: no entrance animation; spines slide up smoothly like pulling a book ---- */
+.spine,
+.shelf-row-wrap,
+.shelf-row-list .shelf-row-wrap:first-child { animation: none; }
+.spine {
+  transition: transform 0.45s cubic-bezier(0.22, 0.7, 0.2, 1), box-shadow 0.45s ease;
+  will-change: transform;
+}
+.spine:hover { transform: translateY(-5px); }
+.spine.active { transform: translateY(-16px); }
