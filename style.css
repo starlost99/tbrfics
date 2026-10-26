@@ -1472,3 +1472,8 @@ dialog h2 {
 
 .masthead h1 { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .masthead h1:focus-visible { outline: 2px solid var(--rose-deep); outline-offset: 4px; }
+
+/* tighten the gap between the tabs and the filter chips */
+.toolbar-row { margin-bottom: 0.75rem; }
+.controls { padding-top: 0; }
+.quick-filter { margin-top: 0; }
