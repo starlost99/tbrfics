@@ -181,13 +181,22 @@ main {
 #searchInput:focus-visible { outline: 2px solid var(--rose-deep); outline-offset: 1px; }
 
 .my-tags-panel {
-  margin-top: 0.7rem;
+  margin-top: 0.8rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--surface);
 }
 .my-tags-panel > summary {
-  font-size: 0.78rem;
+  padding: 0.6rem 0.9rem;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
   font-weight: 600;
-  color: var(--ink-soft);
+  color: var(--ink);
   cursor: pointer;
+}
+.my-tags-panel > .tag-rail {
+  margin-top: 0;
+  padding: 0 0.9rem 0.9rem;
 }
 
 .quick-filter {
