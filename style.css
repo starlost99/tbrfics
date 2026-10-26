@@ -182,12 +182,9 @@ main {
 
 .my-tags-panel {
   margin-top: 0.8rem;
-  border: 1px solid var(--rule);
-  border-radius: var(--radius);
-  background: var(--surface);
 }
 .my-tags-panel > summary {
-  padding: 0.6rem 0.9rem;
+  padding: 0.3rem 0;
   font-family: var(--font-body);
   font-size: 0.82rem;
   font-weight: 600;
@@ -195,8 +192,7 @@ main {
   cursor: pointer;
 }
 .my-tags-panel > .tag-rail {
-  margin-top: 0;
-  padding: 0 0.9rem 0.9rem;
+  margin-top: 0.4rem;
 }
 
 .quick-filter {
