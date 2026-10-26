@@ -26,6 +26,7 @@
   let activeAoTags = new Set();    // fandom/relationship/character/freeform — AND match
   let aoTagQuery = '';
   let sortBy = 'dateAdded-desc';   // shared between Catalog and Shelves
+  let pinnedId = null;             // fic re-filed via "Info" — shown first until search/sort/filters change
 
   // ---- View state ----
   let view = 'catalog';   // 'catalog' | 'shelves'
@@ -170,6 +171,7 @@
       // wants the latest chapters/word count/etc. Refresh AO3-sourced
       // fields only; leave their own tags, notes, stars, and shelf alone.
       const prevChapters = dupe.chapters;
+      pinnedId = dupe.id;
       Object.assign(dupe, {
         title, authors, summary,
         rating, warnings, category,
@@ -553,7 +555,17 @@
         sorted.sort((a, b) => new Date(b.dateAdded || 0) - new Date(a.dateAdded || 0));
         break;
     }
-    return sorted;
+    return pinFirst(sorted);
+  }
+
+  // Puts the just-refreshed fic at the very top, whatever the sort order.
+  function pinFirst(list) {
+    if (!pinnedId) return list;
+    const i = list.findIndex(e => e.id === pinnedId);
+    if (i <= 0) return list;
+    const copy = list.slice();
+    copy.unshift(copy.splice(i, 1)[0]);
+    return copy;
   }
 
   function extractOrSection(summary) {
@@ -1038,6 +1050,7 @@
     const node = template.content.cloneNode(true);
     const card = node.querySelector('.card');
     card.dataset.id = entry.id;
+    if (entry.id === pinnedId) card.classList.add('card-pinned');
 
     node.querySelector('.stub-date').textContent = formatDate(entry.dateAdded);
     node.querySelector('.stub-remove').addEventListener('click', () => removeEntry(entry.id));
@@ -1620,9 +1633,13 @@
   }
 
   // ---- Search & filter wiring ----
-  searchInput.addEventListener('input', render);
+  searchInput.addEventListener('input', () => {
+    pinnedId = null;
+    render();
+  });
 
   sortSelect.addEventListener('change', () => {
+    pinnedId = null;
     sortBy = sortSelect.value;
     render();
   });
@@ -1642,6 +1659,7 @@
   });
 
   clearFiltersBtn.addEventListener('click', () => {
+    pinnedId = null;
     activeTags.clear();
     activeRatings.clear();
     activeAoTags.clear();

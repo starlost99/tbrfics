@@ -1385,3 +1385,7 @@ dialog h2 {
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
 }
+
+.card-pinned {
+  box-shadow: 3px 3px 0 var(--rose);
+}
