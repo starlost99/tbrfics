@@ -20,6 +20,7 @@
   let activeRatings = new Set();   // AO3 rating — OR match
   let statusFilter = 'all';        // 'all' | 'complete' | 'wip'
   let starFilter = 0;              // 0 = no filter, else "at least N stars"
+  let ratedFilter = 'all';         // 'all' | 'rated' | 'unrated'
   let wordMin = null;
   let wordMax = null;
   let activeAoTags = new Set();    // fandom/relationship/character/freeform — AND match
@@ -313,6 +314,7 @@
     activeAoTags.clear();
     statusFilter = 'all';
     starFilter = 0;
+    ratedFilter = 'all';
     wordMin = null;
     wordMax = null;
     wordMinInput.value = '';
@@ -404,6 +406,22 @@
     });
   }
 
+  function renderRatedToggle() {
+    const el = document.getElementById('ratedToggle');
+    el.innerHTML = '';
+    [['all', 'All'], ['rated', 'Rated'], ['unrated', 'Unrated']].forEach(([value, label]) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'tag-chip' + (ratedFilter === value ? ' active' : '');
+      btn.textContent = label;
+      btn.addEventListener('click', () => {
+        ratedFilter = value;
+        render();
+      });
+      el.appendChild(btn);
+    });
+  }
+
   function renderStarFilterRail() {
     starRail.innerHTML = '';
     [1, 2, 3, 4, 5].forEach(n => {
@@ -453,6 +471,7 @@
     return activeTags.size + activeRatings.size + activeAoTags.size +
       (statusFilter !== 'all' ? 1 : 0) +
       (starFilter > 0 ? 1 : 0) +
+      (ratedFilter !== 'all' ? 1 : 0) +
       (wordMin !== null ? 1 : 0) +
       (wordMax !== null ? 1 : 0);
   }
@@ -475,6 +494,8 @@
     if (statusFilter === 'wip' && entry.complete !== false) return false;
 
     if (starFilter > 0 && (entry.stars || 0) < starFilter) return false;
+    if (ratedFilter === 'rated' && !entry.stars) return false;
+    if (ratedFilter === 'unrated' && entry.stars) return false;
 
     if (wordMin !== null && (entry.words === null || entry.words === undefined || entry.words < wordMin)) return false;
     if (wordMax !== null && (entry.words === null || entry.words === undefined || entry.words > wordMax)) return false;
@@ -605,6 +626,7 @@
     renderRatingRail();
     renderStatusRail();
     renderStarFilterRail();
+    renderRatedToggle();
     renderAoTagRail();
     renderFilterCount();
 
@@ -1624,6 +1646,7 @@
     activeAoTags.clear();
     statusFilter = 'all';
     starFilter = 0;
+    ratedFilter = 'all';
     wordMin = null;
     wordMax = null;
     wordMinInput.value = '';

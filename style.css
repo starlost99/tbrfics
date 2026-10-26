@@ -180,6 +180,12 @@ main {
 }
 #searchInput:focus-visible { outline: 2px solid var(--rose-deep); outline-offset: 1px; }
 
+.quick-filter {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.7rem;
+}
+
 .tag-rail {
   display: flex;
   flex-wrap: wrap;
