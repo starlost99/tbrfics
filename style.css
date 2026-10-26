@@ -1469,3 +1469,6 @@ dialog h2 {
   border: var(--ctl-border);
   border-radius: 12px;
 }
+
+.masthead h1 { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.masthead h1:focus-visible { outline: 2px solid var(--rose-deep); outline-offset: 4px; }

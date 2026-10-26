@@ -1670,7 +1670,8 @@
     renderAoTagRail();
   });
 
-  clearFiltersBtn.addEventListener('click', () => {
+  function resetFilters(alsoSearch) {
+    if (alsoSearch) searchInput.value = '';
     pinnedId = null;
     activeTags.clear();
     activeRatings.clear();
@@ -1685,7 +1686,24 @@
     aoTagQuery = '';
     aoTagSearch.value = '';
     render();
-  });
+    if (view === 'shelves') { renderBookshelf(); renderShelfContents(); }
+    if (view === 'library') renderLibrary();
+  }
+  clearFiltersBtn.addEventListener('click', () => resetFilters(false));
+
+  // Tapping the "the stacks" title = start fresh (search + all filters)
+  const titleEl = document.querySelector('.masthead h1');
+  if (titleEl) {
+    titleEl.setAttribute('role', 'button');
+    titleEl.setAttribute('tabindex', '0');
+    titleEl.addEventListener('click', () => {
+      resetFilters(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    titleEl.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); titleEl.click(); }
+    });
+  }
 
   // ---- Manual add dialog ----
   const dialog = document.getElementById('addDialog');
