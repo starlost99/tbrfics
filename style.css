@@ -1615,3 +1615,59 @@ dialog h2 {
 @media (prefers-reduced-motion: reduce) {
   .spine, .shelf-row-wrap { animation: none; }
 }
+
+/* ---- Shelves: softer light/dark colours + gentler motion (overrides above) ---- */
+:root {
+  --case-top: #F3DAE2;
+  --case-bot: #EDC9D4;
+  --case-glow: rgba(255,255,255,0.28);
+  --case-inset: rgba(168,93,118,0.16);
+  --plank-1: #93607A; --plank-2: #77495F; --plank-3: #623649;
+  --badge-bg: rgba(255,253,249,0.9);
+  --ring: rgba(255,255,255,0.8);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --case-top: #34242F;
+    --case-bot: #2B1D27;
+    --case-glow: rgba(255,255,255,0);
+    --case-inset: rgba(0,0,0,0.35);
+    --plank-1: #5E3A4D; --plank-2: #4A2D3D; --plank-3: #3A2230;
+    --badge-bg: rgba(255,255,255,0.14);
+    --ring: rgba(232,165,187,0.55);
+  }
+  .spine-add { background: rgba(255,255,255,0.04); }
+  .spine-unshelved { background: rgba(255,255,255,0.05); }
+  .spine { filter: saturate(0.85) brightness(0.92); }
+}
+.bookshelf-wrap {
+  background:
+    radial-gradient(120% 90% at 50% 0%, var(--case-glow), transparent 60%),
+    linear-gradient(180deg, var(--case-top), var(--case-bot));
+  box-shadow: inset 0 8px 18px var(--case-inset), inset 0 -2px 0 var(--case-glow);
+}
+.shelf-plank {
+  background: linear-gradient(180deg, var(--plank-1) 0%, var(--plank-2) 55%, var(--plank-3) 100%);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.18), 0 8px 12px rgba(0,0,0,0.22);
+}
+.spine-count { background: var(--badge-bg); color: var(--rose-deep); }
+.spine-unshelved .spine-count { background: var(--rose-deep); color: var(--bg); }
+.spine.active {
+  box-shadow: inset -7px 0 10px -6px rgba(0,0,0,0.32), 0 0 0 2px var(--ring), 0 8px 14px rgba(0,0,0,0.22);
+}
+
+/* motion: quiet fade-and-settle, a small lift on hover */
+@keyframes spine-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+.spine {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  animation: spine-in 0.4s ease-out both;
+  animation-delay: calc(var(--i, 0) * 30ms);
+}
+.spine:hover { transform: translateY(-4px); }
+.spine.active { transform: translateY(-9px) rotate(-1deg); }
+.shelf-row-wrap,
+.shelf-row-list .shelf-row-wrap:first-child { animation: spine-in 0.3s ease-out both; }
+.shelf-row-wrap:hover { transform: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
