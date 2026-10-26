@@ -325,6 +325,7 @@
 
     if (kind === 'custom') {
       activeTags.add(tag);
+      document.getElementById('myTagsPanel').open = true; // keep the active tag visible
     } else {
       activeAoTags.add(tag);
       filterPanel.open = true; // AO3 tags live inside the collapsible panel — open it so the match is visible

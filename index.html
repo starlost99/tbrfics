@@ -41,9 +41,12 @@
           <input type="search" id="searchInput" placeholder="search title, author, fandom, tags…" autocomplete="off">
         </div>
         <div class="quick-filter" id="ratedToggle" role="group" aria-label="Filter by your rating"></div>
-        <div class="tag-rail" id="tagRail">
-          <!-- your own tag filter chips injected here -->
-        </div>
+        <details class="my-tags-panel" id="myTagsPanel">
+          <summary>Your tags</summary>
+          <div class="tag-rail" id="tagRail">
+            <!-- your own tag filter chips injected here -->
+          </div>
+        </details>
 
         <details class="filter-panel" id="filterPanel">
           <summary>Filters <span class="filter-count" id="filterCount" hidden></span></summary>
