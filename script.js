@@ -685,6 +685,8 @@
         spine.style.background = spineColorForShelf(item.key);
       }
       spine.style.setProperty('--spine-w', spineWidth(item.key) + 'px');
+      spine.style.setProperty('--spine-h', (item.special ? 132 : 124 + (hashString(item.key + 'h') % 5) * 8) + 'px');
+      spine.style.setProperty('--i', String(bookshelfRail.children.length));
       spine.title = `${item.label} (${count})`;
       spine.addEventListener('click', () => {
         activeShelf = item.key;
