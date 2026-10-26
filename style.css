@@ -1389,3 +1389,10 @@ dialog h2 {
 .card-pinned {
   box-shadow: 3px 3px 0 var(--rose);
 }
+
+/* ---- account / sync ---- */
+.auth-note { font-size: .85rem; color: var(--ink-soft); margin: 0 0 .75rem; }
+.auth-msg { min-height: 1.2em; font-size: .85rem; color: var(--coral); margin: .5rem 0 0; }
+#authDialog .dialog-actions { flex-wrap: wrap; }
+#accountBtn.signed-in::before { content: "● "; color: #5a9a6b; }
+#accountBtn.offline::before { content: "● "; color: var(--gold); }

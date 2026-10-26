@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>the stacks — a TBR catalog</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#C97B92">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="the stacks">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
@@ -22,6 +28,7 @@
 <main>
   <div class="toolbar-row">
     <div class="data-actions">
+      <button type="button" id="accountBtn" class="btn-ghost btn-data" title="Sign in to sync across devices">Sign in</button>
       <button type="button" id="exportBtn" class="btn-ghost btn-data" title="Download your cards and shelves as a JSON file">Export</button>
       <button type="button" id="importBtn" class="btn-ghost btn-data" title="Load cards and shelves from a JSON file">Import</button>
       <input type="file" id="importInput" accept="application/json" hidden>
@@ -162,6 +169,24 @@
   <div id="bookInfoContent"></div>
 </dialog>
 
+<dialog id="authDialog">
+  <form id="authForm">
+    <h2 id="authTitle">Sign in</h2>
+    <p id="authNote" class="auth-note"></p>
+    <div id="authFields">
+      <label>Email <input type="email" id="authEmail" autocomplete="email" required></label>
+      <label>Password <input type="password" id="authPassword" autocomplete="current-password" minlength="6" required></label>
+    </div>
+    <p id="authMsg" class="auth-msg" role="status"></p>
+    <div class="dialog-actions">
+      <button type="button" id="authCancel" class="btn-ghost">Close</button>
+      <button type="button" id="authSignUp" class="btn-ghost">Create account</button>
+      <button type="submit" id="authSubmit" class="btn-solid">Sign in</button>
+      <button type="button" id="authSignOut" class="btn-ghost" hidden>Sign out</button>
+    </div>
+  </form>
+</dialog>
+
 <template id="cardTemplate">
   <article class="card">
     <div class="card-stub">
@@ -204,6 +229,14 @@
   </article>
 </template>
 
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
+<script src="sync.js"></script>
 <script src="script.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
+</script>
 </body>
 </html>

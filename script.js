@@ -45,8 +45,18 @@
     }
   }
 
+  // ---- Cloud sync hooks (see sync.js) ----
+  const DIRTY_KEY = 'tbr-stacks-dirty';
+  const SYNC_USER_KEY = 'tbr-stacks-sync-user';
+  function snapshot() { return { entries, shelves, shelfColors }; }
+  function markDirty() {
+    localStorage.setItem(DIRTY_KEY, '1');
+    if (window.StacksCloud) window.StacksCloud.queuePush(snapshot);
+  }
+
   function saveEntries() {
     localStorage.setItem(STORE_KEY, JSON.stringify(entries));
+    markDirty();
   }
 
   function loadShelves() {
@@ -60,6 +70,7 @@
 
   function saveShelves() {
     localStorage.setItem(SHELVES_STORE_KEY, JSON.stringify(shelves));
+    markDirty();
   }
 
   function loadShelfColors() {
@@ -73,6 +84,7 @@
 
   function saveShelfColors() {
     localStorage.setItem(SHELF_COLORS_STORE_KEY, JSON.stringify(shelfColors));
+    markDirty();
   }
 
   // A fic can now live on any number of shelves — [] means unshelved.
@@ -1752,8 +1764,62 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
+  // ---- Cloud sync on startup ----
+  function applyRemote(d) {
+    entries = (d.entries || []).map(migrateShelfField);
+    shelves = d.shelves || [];
+    shelfColors = d.shelfColors || {};
+    localStorage.setItem(STORE_KEY, JSON.stringify(entries));
+    localStorage.setItem(SHELVES_STORE_KEY, JSON.stringify(shelves));
+    localStorage.setItem(SHELF_COLORS_STORE_KEY, JSON.stringify(shelfColors));
+  }
+
+  // First sign-in on a device that already has local cards: union by URL/id.
+  function mergeRemote(d) {
+    const urls = new Set(entries.filter(e => e.url).map(e => e.url));
+    const ids = new Set(entries.map(e => e.id));
+    (d.entries || []).forEach(r => {
+      if ((r.url && urls.has(r.url)) || ids.has(r.id)) return;
+      entries.push(migrateShelfField(r));
+    });
+    (d.shelves || []).forEach(n => { if (!shelves.includes(n)) shelves.push(n); });
+    shelfColors = Object.assign({}, d.shelfColors || {}, shelfColors);
+  }
+
+  async function syncOnStart() {
+    const cloud = window.StacksCloud;
+    if (!cloud || !cloud.enabled) return;
+    const user = await cloud.start(snapshot);
+    if (!user) return;
+    try {
+      const remote = await cloud.pull();
+      const dirty = localStorage.getItem(DIRTY_KEY) === '1';
+      const sameDevice = localStorage.getItem(SYNC_USER_KEY) === user.id;
+      if (!remote) {
+        await cloud.pushNow(snapshot);
+      } else if (!sameDevice && entries.length) {
+        mergeRemote(remote);
+        saveEntries(); saveShelves(); saveShelfColors();
+        await cloud.pushNow(snapshot);
+      } else if (dirty) {
+        await cloud.pushNow(snapshot); // offline edits win
+      } else {
+        applyRemote(remote);
+      }
+      localStorage.setItem(SYNC_USER_KEY, user.id);
+      localStorage.removeItem(DIRTY_KEY);
+    } catch (e) {
+      cloud.setStatus('offline');
+    }
+  }
+
   // ---- Init ----
-  ingestFromURL();
-  render();
-  if (pendingToast) showToast(pendingToast);
+  render(); // show the local cache immediately
+  syncOnStart().finally(() => {
+    ingestFromURL(); // after sync, so a new card lands on top of your cloud data
+    render();
+    if (view === 'shelves') { renderBookshelf(); renderShelfContents(); }
+    if (view === 'library') renderLibrary();
+    if (pendingToast) showToast(pendingToast);
+  });
 })();
