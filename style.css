@@ -1477,3 +1477,17 @@ dialog h2 {
 .toolbar-row { margin-bottom: 0.75rem; }
 .controls { padding-top: 0; }
 .quick-filter { margin-top: 0; }
+
+/* cute book stack, top right of the masthead */
+.masthead { position: relative; }
+.masthead-books {
+  position: absolute;
+  top: 0.9rem;
+  right: 1.5rem;
+  width: 64px;
+  height: 64px;
+  pointer-events: none;
+}
+@media (max-width: 520px) {
+  .masthead-books { top: 0.8rem; right: 1.1rem; width: 52px; height: 52px; }
+}

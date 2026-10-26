@@ -17,6 +17,26 @@
 <body>
 
 <header class="masthead">
+  <svg class="masthead-books" viewBox="0 0 80 80" aria-hidden="true" focusable="false">
+    <!-- bottom book -->
+    <rect x="8" y="55" width="62" height="15" rx="4" fill="var(--rose-deep)"/>
+    <rect x="61" y="58" width="7" height="9" rx="2" fill="var(--surface)"/>
+    <rect x="16" y="55" width="3" height="15" fill="var(--surface)" opacity=".55"/>
+    <!-- middle book -->
+    <rect x="15" y="40" width="52" height="14" rx="4" fill="var(--rose)"/>
+    <rect x="58" y="43" width="7" height="8" rx="2" fill="var(--surface)"/>
+    <rect x="23" y="40" width="3" height="14" fill="var(--surface)" opacity=".55"/>
+    <!-- top book, slightly tilted -->
+    <g transform="rotate(-5 36 33)">
+      <rect x="12" y="25" width="48" height="13" rx="4" fill="#F2C4D2"/>
+      <rect x="51" y="28" width="7" height="7" rx="2" fill="var(--surface)"/>
+      <rect x="20" y="25" width="3" height="13" fill="var(--surface)" opacity=".7"/>
+      <path transform="translate(38 14)" d="M0 5C-9 -1 -6 -8 0 -4C6 -8 9 -1 0 5Z" fill="var(--rose-deep)"/>
+    </g>
+    <!-- sparkles -->
+    <path d="M67 14l1.6 4.4L73 20l-4.4 1.6L67 26l-1.6-4.4L61 20l4.4-1.6z" fill="var(--rose)"/>
+    <path d="M13 12l1 2.6L16.6 16 14 17l-1 2.6L12 17l-2.6-1L12 14.6z" fill="var(--rose)" opacity=".7"/>
+  </svg>
   <div class="masthead-inner">
     <p class="eyebrow">reader's ledger</p>
     <h1>the stacks</h1>
