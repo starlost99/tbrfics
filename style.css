@@ -1396,3 +1396,76 @@ dialog h2 {
 #authDialog .dialog-actions { flex-wrap: wrap; }
 #accountBtn.signed-in::before { content: "● "; color: #5a9a6b; }
 #accountBtn.offline::before { content: "● "; color: var(--gold); }
+
+/* ---- unified controls (search, tabs, panels share one look) ---- */
+:root {
+  --ctl-border: 1px solid var(--rule);
+  --ctl-radius: 22px;
+  --ctl-gap: 0.75rem;
+}
+
+/* tabs: same soft outline, active state matches the pink "All" chip */
+.view-tabs {
+  border: var(--ctl-border);
+  background: var(--surface);
+}
+.view-tab { color: var(--ink-soft); }
+.view-tab.active { background: var(--rose-deep); color: var(--surface); }
+.view-tab:focus-visible { outline: 2px solid var(--rose-deep); outline-offset: 2px; }
+
+/* search: pill, same border as the panels */
+#searchInput {
+  border: var(--ctl-border);
+  border-radius: 999px;
+  padding: 0.7rem 1.1rem;
+}
+#searchInput:focus-visible { outline: 2px solid var(--rose-deep); outline-offset: 1px; }
+
+/* "Your tags" and "Filters" become matching panels */
+.my-tags-panel,
+.filter-panel,
+.controls-collapse.shelves-mode {
+  margin-top: var(--ctl-gap);
+  border: var(--ctl-border);
+  border-radius: var(--ctl-radius);
+  background: var(--surface);
+}
+.quick-filter { margin-top: var(--ctl-gap); }
+.my-tags-panel > summary,
+.filter-panel > summary {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.7rem 1.1rem;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--rose-deep);
+  cursor: pointer;
+  list-style: none;
+}
+.my-tags-panel > summary::-webkit-details-marker,
+.filter-panel > summary::-webkit-details-marker { display: none; }
+.my-tags-panel > summary::after,
+.filter-panel > summary::after {
+  content: "";
+  margin-left: auto;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-right: 2px solid var(--rose-deep);
+  border-bottom: 2px solid var(--rose-deep);
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform 0.15s;
+}
+.my-tags-panel[open] > summary::after,
+.filter-panel[open] > summary::after { transform: rotate(-135deg); }
+.my-tags-panel > .tag-rail { margin: 0; padding: 0 1.1rem 0.9rem; }
+.filter-body { padding: 0 1.1rem 1.1rem; }
+
+/* inner inputs: same border, softer corners */
+.range-row input,
+#aoTagSearch,
+.sort-select {
+  border: var(--ctl-border);
+  border-radius: 12px;
+}
