@@ -188,7 +188,7 @@ main {
   font-family: var(--font-body);
   font-size: 0.82rem;
   font-weight: 600;
-  color: var(--ink);
+  color: var(--rose-deep);
   cursor: pointer;
 }
 .my-tags-panel > .tag-rail {
