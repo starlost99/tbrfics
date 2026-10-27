@@ -2483,6 +2483,9 @@ html[data-glow="pink"] {               /* light mode, pink alternative */
   .masthead h1,
   .masthead .tagline,
   .masthead .eyebrow { text-shadow: none; }
+  /* ...and the text keeps its normal colour, same as with the gold/peach lights */
+  :root .masthead h1 { color: var(--ink); }
+  :root .masthead .tagline { color: var(--ink-soft); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2724,7 +2727,7 @@ html[data-glow="pink"] {               /* light mode, pink alternative */
 }
 
 /* ---- cloth covers are coloured by rating ---- */
-.book-cover-cloth.cloth-general  { --cloth: #B07F38; }  /* gold  */
+.book-cover-cloth.cloth-general  { --cloth: #6E8F78; }  /* dusty sage */
 .book-cover-cloth.cloth-teen     { --cloth: #C97B92; }  /* rose  */
 .book-cover-cloth.cloth-mature   { --cloth: #A85D76; }  /* deep rose */
 .book-cover-cloth.cloth-explicit { --cloth: #7A3F5F; }  /* plum  */
