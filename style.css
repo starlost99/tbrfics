@@ -2478,6 +2478,13 @@ html[data-glow="pink"] {               /* light mode, pink alternative */
   :root:not([data-glow="pink"]) .masthead .eyebrow { text-shadow: none; }
 }
 
+/* light mode, any light colour (pink included): no tinted glow on the title text */
+@media (prefers-color-scheme: light) {
+  .masthead h1,
+  .masthead .tagline,
+  .masthead .eyebrow { text-shadow: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .gs-rocker, .masthead-books { transition: none; }
   .bulb, .bulb::before, .masthead h1, .masthead .tagline, .masthead .eyebrow { transition: none; }
@@ -2704,4 +2711,14 @@ html[data-glow="pink"] {               /* light mode, pink alternative */
 .shelf-view-toggle button.active {
   background: var(--rose-deep, var(--ink));
   color: var(--surface, #fff);
+}
+
+/* ---- Library: cloth-bound covers in the theme's rose / plum / gold ---- */
+.library-grid {
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1.75rem 1.1rem;
+  padding: 0.25rem 0.1rem 0.5rem;
+}
+@media (max-width: 520px) {
+  .library-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

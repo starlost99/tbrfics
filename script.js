@@ -2037,7 +2037,7 @@
     const visible = sortEntries(entries.filter(e => matchesFilters(e, query)));
 
     libraryGrid.innerHTML = '';
-    visible.forEach(entry => libraryGrid.appendChild(buildBookCover(entry)));
+    visible.forEach(entry => libraryGrid.appendChild(buildBookCover(entry, true))); // cloth-bound covers, same as the shelf close-up
 
     libraryEmptyState.hidden = entries.length !== 0;
   }
