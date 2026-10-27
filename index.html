@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<script>try { var g = localStorage.getItem('tbr-stacks-glow'); if (g === 'peach') document.documentElement.dataset.glow = g; } catch (e) {}</script>
 </head>
 <body>
 
@@ -41,7 +42,13 @@
     <h1>the stacks</h1>
     <p class="tagline">a catalog of fics you've meant to get to</p>
   </div>
-  <div class="masthead-count" id="entryCount">0 cards on file</div>
+  <div class="masthead-side">
+    <div class="masthead-count" id="entryCount">0 cards on file</div>
+    <button type="button" class="glow-switch" id="glowSwitch" role="switch" aria-checked="false"
+            aria-label="Warm peach lights" title="Light colour: pink / peach">
+      <span class="gs-plate"><span class="gs-rocker"></span></span>
+    </button>
+  </div>
   <div class="string-lights" id="stringLights" role="group" aria-label="String lights"></div>
 </header>
 
@@ -355,6 +362,23 @@
       updateLit();
     }
     build();
+
+    // wall switch: pink (default) or classic peach, dark mode only
+    const sw = document.getElementById('glowSwitch');
+    if (sw) {
+      const apply = peach => {
+        if (peach) document.documentElement.dataset.glow = 'peach';
+        else delete document.documentElement.dataset.glow;
+        sw.setAttribute('aria-checked', String(peach));
+      };
+      apply(document.documentElement.dataset.glow === 'peach');
+      sw.addEventListener('click', () => {
+        const peach = sw.getAttribute('aria-checked') !== 'true';
+        apply(peach);
+        try { localStorage.setItem('tbr-stacks-glow', peach ? 'peach' : 'pink'); } catch (e) {}
+      });
+    }
+
     let t;
     window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(build, 150); });
   })();
