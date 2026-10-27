@@ -1677,10 +1677,12 @@
   document.getElementById('surpriseBtn').addEventListener('click', () => {
     if (view !== 'catalog') document.querySelector('.view-tab[data-view="catalog"]').click();
     const query = searchInput.value.trim().toLowerCase();
-    // Rated fics are always skipped; your filters narrow it further.
-    const pool = entries.filter(e => !e.stars && matchesFilters(e, query));
+    // Rated fics and anything on the "Reading" shelf are always skipped;
+    // your filters narrow it further.
+    const onReadingShelf = e => entryShelves(e).some(s => s.trim().toLowerCase() === 'reading');
+    const pool = entries.filter(e => !e.stars && !onReadingShelf(e) && matchesFilters(e, query));
     if (!pool.length) {
-      showToast(entries.length ? 'No unrated fics match your filters' : 'File a fic first');
+      showToast(entries.length ? 'No unrated fics outside your Reading shelf match your filters' : 'File a fic first');
       return;
     }
     const choices = pool.length > 1 ? pool.filter(e => e.id !== lastSurpriseId) : pool;

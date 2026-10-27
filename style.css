@@ -1682,3 +1682,17 @@ dialog h2 {
 }
 .spine:hover { transform: translateY(-5px); }
 .spine.active { transform: translateY(-16px); }
+
+/* ---- Surprise me: sits just under the filters panel ---- */
+.btn-surprise {
+  display: block;
+  margin-top: var(--ctl-gap);
+  padding: 0.55rem 1.1rem;
+  border: var(--ctl-border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--rose-deep);
+  font-size: 0.85rem;
+}
+.btn-surprise:hover { background: var(--rose-deep); color: var(--surface); border-color: var(--rose-deep); }
+.btn-surprise:focus-visible { outline: 2px solid var(--rose-deep); outline-offset: 2px; }
