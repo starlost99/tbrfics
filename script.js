@@ -1979,7 +1979,8 @@
     cover.type = 'button';
     cover.className = 'book-cover' + (cloth ? ' book-cover-cloth' : '');
     if (cloth) {
-      cover.style.setProperty('--cloth', CLOTH_COLORS[hashString(entry.title || entry.id || '') % CLOTH_COLORS.length]);
+      // cloth colour follows the fic's rating (see .cloth-* in style.css)
+      cover.classList.add('cloth-' + ratingClass((entry.rating && entry.rating[0]) || ''));
       cover.title = entry.title || 'Untitled';
     } else {
       cover.style.backgroundImage = coverGradientFor(entry);
@@ -2012,10 +2013,14 @@
     meta.className = 'book-meta';
     const metaBits = [];
     if (entry.words) metaBits.push(formatWords(entry.words));
-    const readTimeText = cloth ? '' : formatReadTime(entry.words);   // read time lives on the full card
+    const readTimeText = formatReadTime(entry.words);
     if (readTimeText) metaBits.push(readTimeText);
-    if (entry.stars) metaBits.push('★'.repeat(Math.round(entry.stars)));
-    meta.textContent = metaBits.join(' · ');
+    let metaText = metaBits.join(' · ');
+    if (entry.stars) {
+      const starText = '★'.repeat(Math.round(entry.stars));
+      metaText = cloth && metaText ? metaText + '\n' + starText : [metaText, starText].filter(Boolean).join(' · ');
+    }
+    meta.textContent = metaText;
     cover.appendChild(meta);
 
     return cover;
