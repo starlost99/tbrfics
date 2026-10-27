@@ -13,12 +13,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
-<script>try { var g = localStorage.getItem('tbr-stacks-glow'); if (g === 'peach') document.documentElement.dataset.glow = g; } catch (e) {}</script>
+<script>try { var g = localStorage.getItem('tbr-stacks-glow'); if (g === 'peach') document.documentElement.dataset.glow = 'peach'; } catch (e) {}</script>
 </head>
 <body>
 
 <header class="masthead">
-  <svg class="masthead-books" viewBox="0 0 80 80" aria-hidden="true" focusable="false">
+  <svg class="masthead-books" id="booksBtn" viewBox="0 0 80 80" role="button" tabindex="0" aria-label="Change light colour" focusable="false">
+    <title>Change the light colour</title>
     <!-- bottom book -->
     <rect x="8" y="55" width="62" height="15" rx="4" fill="var(--rose-deep)"/>
     <rect x="61" y="58" width="7" height="9" rx="2" fill="var(--surface)"/>
@@ -42,14 +43,12 @@
     <h1>the stacks</h1>
     <p class="tagline">a catalog of fics you've meant to get to</p>
   </div>
-  <div class="masthead-side">
-    <div class="masthead-count" id="entryCount">0 cards on file</div>
-    <button type="button" class="glow-switch" id="glowSwitch" role="switch" aria-checked="false"
-            aria-label="Warm peach lights" title="Light colour: pink / peach">
-      <span class="gs-plate"><span class="gs-rocker"></span></span>
-    </button>
-  </div>
+  <div class="masthead-count" id="entryCount">0 cards on file</div>
   <div class="string-lights" id="stringLights" role="group" aria-label="String lights"></div>
+  <button type="button" class="glow-switch" id="glowSwitch" role="switch" aria-checked="true"
+          aria-label="All lights" title="Turn all the lights off / on">
+    <span class="gs-plate"><span class="gs-rocker"></span></span>
+  </button>
 </header>
 
 <main>
@@ -294,7 +293,11 @@
     const mast = document.querySelector('.masthead');
     if (!strip) return;
     let total = 0;
-    const updateLit = () => { if (mast && total) mast.style.setProperty('--lit', ((total - off.size) / total).toFixed(2)); };
+    const sw = document.getElementById('glowSwitch');
+    const updateLit = () => {
+      if (mast && total) mast.style.setProperty('--lit', ((total - off.size) / total).toFixed(2));
+      if (sw) sw.setAttribute('aria-checked', String(off.size < total));
+    };
     const NS = 'http://www.w3.org/2000/svg';
     const off = new Set();          // bulbs the person has switched off, by index
     let lastW = 0;
@@ -363,19 +366,30 @@
     }
     build();
 
-    // wall switch: pink (default) or classic peach, dark mode only
-    const sw = document.getElementById('glowSwitch');
-    if (sw) {
-      const apply = peach => {
+    // wall switch: all lights off / on
+    if (sw) sw.addEventListener('click', () => {
+      const turnOff = off.size < total;          // any light on -> switch everything off
+      off.clear();
+      strip.querySelectorAll('.bulb').forEach((b, i) => {
+        b.classList.toggle('off', turnOff);
+        b.setAttribute('aria-pressed', String(!turnOff));
+        if (turnOff) off.add(i);
+      });
+      updateLit();
+    });
+
+    // tap the books: pink <-> classic peach
+    const books = document.getElementById('booksBtn');
+    if (books) {
+      const flip = () => {
+        const peach = document.documentElement.dataset.glow !== 'peach';
         if (peach) document.documentElement.dataset.glow = 'peach';
         else delete document.documentElement.dataset.glow;
-        sw.setAttribute('aria-checked', String(peach));
-      };
-      apply(document.documentElement.dataset.glow === 'peach');
-      sw.addEventListener('click', () => {
-        const peach = sw.getAttribute('aria-checked') !== 'true';
-        apply(peach);
         try { localStorage.setItem('tbr-stacks-glow', peach ? 'peach' : 'pink'); } catch (e) {}
+      };
+      books.addEventListener('click', flip);
+      books.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); }
       });
     }
 

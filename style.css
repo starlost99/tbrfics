@@ -2411,58 +2411,71 @@ dialog[open]::backdrop { animation: backdrop-in 0.3s ease; }
   .masthead .masthead-count { color: var(--ink-soft); text-shadow: none; }
 }
 
-/* ---- dark mode: choose between pink and the classic peach glow ---- */
-.masthead-side {
-  display: flex;
-  align-items: flex-end;
-  gap: .7rem;
+/* ---- classic peach glow (tap the books to switch), light + dark ---- */
+html[data-glow="peach"] {
+  --bulb-rgb: 244, 144, 108;
+  --text-warm: #C8664A;
+  --bulb-core: #FFEBE0;
+  --bulb-mid: #FDC3A9;
+  --bulb-edge: #F6966F;
+  --bulb-rim: #EC8460;
 }
-.glow-switch { display: none; }
 @media (prefers-color-scheme: dark) {
-  html[data-glow="peach"] {
-    --bulb-rgb: 244, 144, 108;
-    --text-warm: #F29A78;
-    --bulb-core: #FFEBE0;
-    --bulb-mid: #FDC3A9;
-    --bulb-edge: #F6966F;
-    --bulb-rim: #EC8460;
-  }
-  .glow-switch {
-    display: inline-flex;
-    padding: 4px;
-    margin: 0 0 .1rem;
-    background: none;
-    border: 0;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .glow-switch:focus-visible { outline: 2px solid var(--rose-deep); outline-offset: 2px; border-radius: 4px; }
+  html[data-glow="peach"] { --text-warm: #F29A78; }
 }
+
+/* the books are a button now */
+.masthead-books {
+  pointer-events: auto;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .15s ease;
+}
+.masthead-books:active { transform: scale(.94) rotate(-3deg); }
+.masthead-books:focus-visible { outline: 2px solid var(--rose-deep); outline-offset: 4px; border-radius: 6px; }
+
+/* wall switch under the right end of the lights: all lights off / on */
+.glow-switch {
+  position: absolute;
+  right: 1.5rem;
+  top: calc(100% + 5.5rem);
+  z-index: 2;
+  padding: 8px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+@media (max-width: 520px) { .glow-switch { right: 1.1rem; } }
+.glow-switch:focus-visible { outline: 2px solid var(--rose-deep); outline-offset: 2px; border-radius: 6px; }
 .gs-plate {
   position: relative;
   display: block;
-  width: 15px;
-  height: 24px;
-  border-radius: 4px;
+  width: 22px;
+  height: 36px;
+  border-radius: 5px;
   background: var(--surface);
   border: 1px solid var(--rule);
+  box-shadow: 0 1px 0 rgba(0,0,0,.06);
 }
 .gs-rocker {
   position: absolute;
-  left: 3px;
-  right: 3px;
-  top: 3px;
-  height: 8px;
-  border-radius: 2px;
+  left: 4px;
+  right: 4px;
+  top: 4px;
+  height: 13px;
+  border-radius: 3px;
   background: rgb(var(--bulb-rgb));
-  box-shadow: 0 0 6px rgba(var(--bulb-rgb), .7);
+  box-shadow: 0 0 8px rgba(var(--bulb-rgb), .75);
   transition: top .2s ease, background .35s ease, box-shadow .35s ease;
 }
-.glow-switch[aria-checked="true"] .gs-rocker { top: 11px; }   /* flipped down = peach */
+.glow-switch[aria-checked="false"] .gs-rocker {   /* off: rocker down, dull */
+  top: 17px;
+  background: color-mix(in srgb, var(--ink-soft) 45%, var(--surface));
+  box-shadow: none;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .gs-rocker { transition: none; }
-}
-@media (prefers-reduced-motion: reduce) {
+  .gs-rocker, .masthead-books { transition: none; }
   .bulb, .bulb::before, .masthead h1, .masthead .tagline, .masthead .eyebrow, .masthead .masthead-count { transition: none; }
 }
