@@ -2482,3 +2482,15 @@ html[data-glow="pink"] {               /* light mode, pink alternative */
   .gs-rocker, .masthead-books { transition: none; }
   .bulb, .bulb::before, .masthead h1, .masthead .tagline, .masthead .eyebrow { transition: none; }
 }
+
+/* ---- Shelves/Library rows: the expanded detail is part of the row, not a card inside a card ----
+   (was a sharp dark-outlined box jammed inside the rounded row, so the corners clashed at the bottom) */
+.shelf-row-detail { padding: 0; }
+.shelf-row-detail .card {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0.9rem 0.75rem 1.05rem;
+}
