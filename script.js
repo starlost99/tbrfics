@@ -30,6 +30,7 @@
 
   // ---- View state ----
   let view = 'catalog';   // 'catalog' | 'shelves'
+  let towerShelf = null;   // null = whole tower; 'unshelved' | shelf name = that shelf's close-up
   let shelvesMode = 'rail'; // 'rail' (original bookshelf) | 'tower' (Booktower-style stacked shelves)
   let activeShelf = null; // 'unshelved' | a shelf name | null (nothing pulled down yet)
   let expandedRows = new Set(); // entry ids currently expanded to show full card details in the Shelves view
@@ -714,7 +715,7 @@
     return Math.round(34 + t * 22);
   }
 
-  function buildTowerFloor(label, members, color) {
+  function buildTowerFloor(label, members, color, shelfKey) {
     const floor = document.createElement('section');
     floor.className = 'tower-floor';
     if (color) floor.style.setProperty('--shelf-color', color);
@@ -756,6 +757,14 @@
     caseEl.appendChild(books);
     room.appendChild(caseEl);
     floor.appendChild(room);
+    room.classList.add('tower-room-open');
+    room.title = `Open ${label}`;
+    room.addEventListener('click', (e) => {
+      if (e.target.closest('.tower-book')) return; // spines open the card instead
+      towerShelf = shelfKey;
+      renderTower();
+      window.scrollTo({ top: 0 });
+    });
     return floor;
   }
 
@@ -769,6 +778,17 @@
     const query = searchInput.value.trim().toLowerCase();
     const shown = sortEntries(entries.filter(e => matchesFilters(e, query)));
 
+    // A shelf that was renamed/deleted can't stay open
+    if (towerShelf && towerShelf !== 'unshelved' && !shelves.includes(towerShelf)) towerShelf = null;
+    const shelfView = document.getElementById('towerShelfView');
+    shelfView.hidden = !towerShelf;
+    tower.hidden = !!towerShelf;
+    legend.hidden = !!towerShelf;
+    if (towerShelf) {
+      renderTowerShelf(shelfView, shown);
+      return;
+    }
+
     const roof = document.createElement('div');
     roof.className = 'tower-roof';
     roof.innerHTML = '<div class="tower-roof-cone"></div><div class="tower-roof-brim"></div>';
@@ -776,7 +796,7 @@
 
     shelves.forEach(name => {
       const members = shown.filter(e => entryShelves(e).includes(name));
-      tower.appendChild(buildTowerFloor(name, members, spineColorForShelf(name)));
+      tower.appendChild(buildTowerFloor(name, members, spineColorForShelf(name), name));
     });
 
     // Empty floor with the "add a shelf" button, like the spine's "+" in the rail
@@ -795,7 +815,7 @@
 
     // Ground floor: books without a shelf (the rail's "unshelved" spine)
     const loose = shown.filter(e => entryShelves(e).length === 0);
-    tower.appendChild(buildTowerFloor('Unshelved', loose, null));
+    tower.appendChild(buildTowerFloor('Unshelved', loose, null, 'unshelved'));
 
     const base = document.createElement('div');
     base.className = 'tower-base';
@@ -814,6 +834,65 @@
       item.appendChild(document.createTextNode(label));
       legend.appendChild(item);
     });
+  }
+
+  // Close-up of one shelf: a big bookcase with every fic shown as the same
+  // cover card the Library uses (rating, title, author, words, read time, stars).
+  function renderTowerShelf(host, shown) {
+    host.innerHTML = '';
+    const isLoose = towerShelf === 'unshelved';
+    const members = isLoose
+      ? shown.filter(e => entryShelves(e).length === 0)
+      : shown.filter(e => entryShelves(e).includes(towerShelf));
+
+    const bar = document.createElement('div');
+    bar.className = 'tshelf-bar';
+    const back = document.createElement('button');
+    back.type = 'button';
+    back.className = 'btn-ghost tshelf-back';
+    back.textContent = '← Tower';
+    back.addEventListener('click', () => { towerShelf = null; renderTower(); });
+    const title = document.createElement('h2');
+    title.className = 'tshelf-title';
+    title.textContent = isLoose ? 'Unshelved' : towerShelf;
+    const count = document.createElement('span');
+    count.className = 'tshelf-count';
+    count.textContent = `${members.length} book${members.length === 1 ? '' : 's'}`;
+    bar.appendChild(back);
+    bar.appendChild(title);
+    bar.appendChild(count);
+    host.appendChild(bar);
+
+    const stage = document.createElement('div');
+    stage.className = 'tshelf-stage';
+    stage.style.setProperty('--shelf-color', isLoose ? 'var(--rose)' : spineColorForShelf(towerShelf));
+
+    const cornice = document.createElement('div');
+    cornice.className = 'tshelf-cornice';
+    const bodyEl = document.createElement('div');
+    bodyEl.className = 'tshelf-case';
+
+    if (members.length === 0) {
+      const empty = document.createElement('p');
+      empty.className = 'tshelf-empty';
+      empty.textContent = isLoose
+        ? 'Nothing unshelved — everything has a home.'
+        : 'Nothing here yet — use a card\'s shelf picker to file a fic on this shelf.';
+      bodyEl.appendChild(empty);
+      const slot = document.createElement('div');
+      slot.className = 'tshelf-slot tshelf-slot-empty';
+      bodyEl.appendChild(slot);
+    }
+    members.forEach(entry => {
+      const slot = document.createElement('div');
+      slot.className = 'tshelf-slot';
+      slot.appendChild(buildBookCover(entry));
+      bodyEl.appendChild(slot);
+    });
+
+    stage.appendChild(cornice);
+    stage.appendChild(bodyEl);
+    host.appendChild(stage);
   }
 
   function setShelvesMode(mode) {

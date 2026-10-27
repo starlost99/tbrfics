@@ -2216,3 +2216,54 @@ dialog[open]::backdrop { animation: backdrop-in 0.3s ease; }
   display: inline-block; width: 10px; height: 10px; margin-right: 0.3rem;
   border: 1px solid var(--ink); border-radius: 2px; vertical-align: -1px;
 }
+
+/* tappable rooms */
+.tower-room-open { cursor: pointer; }
+.tower-room-open:hover { filter: brightness(1.06); }
+
+/* =====================================================================
+   Shelf close-up (tower → tap a room)
+   ===================================================================== */
+.tshelf-bar { display: flex; align-items: center; gap: 0.7rem; margin: 0 0 0.9rem; flex-wrap: wrap; }
+.tshelf-title { margin: 0; font-family: var(--font-display); font-size: 1.4rem; color: var(--ink); }
+.tshelf-count { font-size: 0.78rem; color: var(--ink-soft); }
+.tshelf-back { font-size: 0.8rem; }
+
+.tshelf-stage {
+  --wood: color-mix(in srgb, var(--gold) 62%, #6b4423);
+  --wood-light: color-mix(in srgb, var(--gold) 75%, #f6e3c0);
+  --wood-dark: color-mix(in srgb, var(--gold) 40%, #3b2615);
+  padding: 1.5rem 1rem 1.25rem; border-radius: 22px; overflow: hidden;
+  border: 1.5px solid var(--ink);
+  background:
+    radial-gradient(ellipse at 15% 10%, color-mix(in srgb, var(--shelf-color) 55%, transparent), transparent 55%),
+    radial-gradient(ellipse at 85% 90%, color-mix(in srgb, var(--shelf-color) 40%, transparent), transparent 55%),
+    color-mix(in srgb, var(--shelf-color) 22%, #1d1424);
+  box-shadow: 3px 3px 0 var(--rule);
+}
+.tshelf-cornice {
+  height: 1.1rem; margin: 0 -0.25rem; background: var(--wood-light);
+  border: 2px solid var(--wood-dark); border-radius: 3px 3px 0 0;
+  box-shadow: 0 5px 0 -1px var(--wood), 0 5px 0 0 var(--wood-dark);
+}
+.tshelf-case {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(138px, 1fr));
+  padding: 0.9rem 0.7rem 0; background: var(--wood-dark);
+  border-left: 8px solid var(--wood-light); border-right: 8px solid var(--wood-light);
+  box-shadow: inset 0 14px 18px -10px rgba(0,0,0,.45);
+}
+.tshelf-slot {
+  position: relative; padding: 0 0.55rem 1.25rem;
+}
+/* the plank each book stands on — slots touch, so planks join into one board */
+.tshelf-slot::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 0.85rem;
+  background: linear-gradient(var(--wood-light), var(--wood));
+  border-top: 2px solid var(--wood-dark);
+}
+.tshelf-slot-empty { min-height: 11rem; grid-column: 1 / -1; }
+.tshelf-slot .book-cover { width: 100%; box-shadow: 0 1px 0 rgba(255,255,255,.6) inset, 0 8px 12px rgba(0,0,0,.4); }
+.tshelf-empty {
+  grid-column: 1 / -1; margin: 0; padding: 1rem 0.5rem 0; text-align: center;
+  font-size: 0.85rem; font-style: italic; color: var(--wood-light);
+}
