@@ -2681,3 +2681,27 @@ html[data-glow="pink"] {               /* light mode, pink alternative */
   transform: none;
   filter: brightness(1.08);
 }
+
+/* ---- shelf view switch: compact list / full cards ---- */
+.shelf-view-toggle {
+  display: inline-flex;
+  align-self: center;
+  border: 1.5px solid var(--rose-deep, var(--ink));
+  border-radius: 999px;
+  overflow: hidden;
+  margin-left: auto;
+}
+.shelf-view-toggle button {
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.18rem 0.7rem;
+  border: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.shelf-view-toggle button.active {
+  background: var(--rose-deep, var(--ink));
+  color: var(--surface, #fff);
+}

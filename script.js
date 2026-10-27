@@ -33,6 +33,8 @@
   let towerShelf = null;   // null = whole tower; 'unshelved' | shelf name = that shelf's close-up
   let shelvesMode = 'rail'; // 'rail' (original bookshelf) | 'tower' (Booktower-style stacked shelves)
   let activeShelf = null; // 'unshelved' | a shelf name | null (nothing pulled down yet)
+  const SHELF_VIEW_KEY = 'tbr-stacks-shelf-view-v1';
+  let shelfView = (() => { try { return localStorage.getItem(SHELF_VIEW_KEY) === 'cards' ? 'cards' : 'list'; } catch (e) { return 'list'; } })(); // 'list' (compact rows) | 'cards' (full cards)
   let expandedRows = new Set(); // entry ids currently expanded to show full card details in the Shelves view
   let colorPickerOpen = false;  // whether the swatch picker is open for the active shelf
 
@@ -1115,6 +1117,31 @@
       header.appendChild(actions);
     }
 
+    const viewToggle = document.createElement('div');
+    viewToggle.className = 'shelf-view-toggle';
+    viewToggle.setAttribute('role', 'group');
+    viewToggle.setAttribute('aria-label', 'Shelf view');
+    if (isUnshelved) viewToggle.style.marginLeft = 'auto';
+    [['list', 'List'], ['cards', 'Cards']].forEach(([mode, label]) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = label;
+      btn.className = shelfView === mode ? 'active' : '';
+      btn.setAttribute('aria-pressed', String(shelfView === mode));
+      btn.title = mode === 'list' ? 'Compact list' : 'Full cards';
+      btn.addEventListener('click', () => {
+        if (shelfView === mode) return;
+        shelfView = mode;
+        try { localStorage.setItem(SHELF_VIEW_KEY, mode); } catch (e) { /* ignore */ }
+        renderShelfContents();
+      });
+      viewToggle.appendChild(btn);
+    });
+    // sits right after the card count, before the Color/Rename/Delete actions
+    const actionsEl = header.querySelector('.shelf-actions');
+    if (actionsEl) { actionsEl.style.marginLeft = '0'; viewToggle.style.marginLeft = 'auto'; header.insertBefore(viewToggle, actionsEl); }
+    else header.appendChild(viewToggle);
+
     shelfContents.appendChild(header);
 
     if (!isUnshelved && colorPickerOpen) {
@@ -1132,6 +1159,14 @@
         empty.textContent = 'Nothing on this shelf matches your current filters.';
       }
       shelfContents.appendChild(empty);
+      return;
+    }
+
+    if (shelfView === 'cards') {
+      const cardsGrid = document.createElement('div');
+      cardsGrid.className = 'card-grid shelf-card-grid';
+      list.forEach(entry => cardsGrid.appendChild(buildCard(entry)));
+      shelfContents.appendChild(cardsGrid);
       return;
     }
 
