@@ -1672,13 +1672,15 @@
     searchTimer = setTimeout(render, 150);
   });
 
-  // ---- Surprise me: random pick from whatever your filters currently show ----
+  // ---- Surprise me: random unrated fic from whatever your filters currently show ----
   let lastSurpriseId = null;
   document.getElementById('surpriseBtn').addEventListener('click', () => {
+    if (view !== 'catalog') document.querySelector('.view-tab[data-view="catalog"]').click();
     const query = searchInput.value.trim().toLowerCase();
-    const pool = entries.filter(e => matchesFilters(e, query));
+    // Rated fics are always skipped; your filters narrow it further.
+    const pool = entries.filter(e => !e.stars && matchesFilters(e, query));
     if (!pool.length) {
-      showToast(entries.length ? 'Nothing matches your filters' : 'File a fic first');
+      showToast(entries.length ? 'No unrated fics match your filters' : 'File a fic first');
       return;
     }
     const choices = pool.length > 1 ? pool.filter(e => e.id !== lastSurpriseId) : pool;
