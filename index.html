@@ -134,6 +134,15 @@
   </section>
 
   <div id="catalogView">
+    <section id="upNextSection" class="up-next" aria-label="Up next">
+      <div class="up-next-head">
+        <h2>Up next</h2>
+        <span class="up-next-count" id="upNextCount"></span>
+      </div>
+      <p class="up-next-hint" id="upNextHint">Pin up to 3 fics with "＋ up next" on a card, and they'll wait for you here.</p>
+      <div id="upNextGrid" class="card-grid"></div>
+    </section>
+
     <section id="cardGrid" class="card-grid">
       <!-- fic cards injected here -->
     </section>
@@ -214,6 +223,7 @@
     <div class="card-stub">
       <span class="stub-date"></span>
       <div class="stub-actions">
+        <button type="button" class="stub-pin" title="Pin to Up next (max 3)">＋ up next</button>
         <button class="stub-refresh" title="Open on AO3 to pull the latest chapters/word count">↻</button>
         <button class="stub-remove" title="Remove from stacks">✕</button>
       </div>

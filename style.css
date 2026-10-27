@@ -1748,3 +1748,63 @@ dialog[open]::backdrop { animation: backdrop-in 0.3s ease; }
   dialog[open],
   dialog[open]::backdrop { animation: none; }
 }
+
+/* ---- Up next ---- */
+.up-next {
+  margin: 0 0 1.75rem;
+  padding: 0.9rem 1rem 1.1rem;
+  border: 1.5px dashed var(--rose);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+}
+.up-next[hidden] { display: none; }
+.up-next-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+.up-next-head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.3rem;
+  color: var(--ink);
+}
+.up-next-head h2::before { content: "✦ "; color: var(--rose); font-style: normal; }
+.up-next-count {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--surface);
+  background: var(--rose-deep);
+  border-radius: 999px;
+  padding: 0.05rem 0.5rem;
+}
+.up-next-count:empty { display: none; }
+.up-next-hint {
+  margin: 0;
+  font-size: 0.82rem;
+  font-style: italic;
+  font-family: var(--font-display);
+  color: var(--ink-soft);
+}
+.up-next-hint[hidden] { display: none; }
+.up-next-grid-empty { display: none; }
+.up-next .card { box-shadow: 3px 3px 0 var(--rose); }
+
+.stub-pin {
+  background: none;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.66rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0.25rem 0.55rem;
+  margin-right: 0.2rem;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.stub-pin:hover { color: var(--rose-deep); border-color: var(--rose-deep); }
+.stub-pin.active { background: var(--rose-deep); border-color: var(--rose-deep); color: var(--surface); }

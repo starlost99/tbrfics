@@ -234,6 +234,10 @@
   const grid = document.getElementById('cardGrid');
   const template = document.getElementById('cardTemplate');
   const emptyState = document.getElementById('emptyState');
+  const upNextSection = document.getElementById('upNextSection');
+  const upNextGrid = document.getElementById('upNextGrid');
+  const upNextCount = document.getElementById('upNextCount');
+  const upNextHint = document.getElementById('upNextHint');
   const entryCount = document.getElementById('entryCount');
   const tagRail = document.getElementById('tagRail');
   const searchInput = document.getElementById('searchInput');
@@ -655,8 +659,18 @@
     const query = searchInput.value.trim().toLowerCase();
     const visible = sortEntries(entries.filter(e => matchesFilters(e, query)));
 
+    // "Up next" fics live in their own section above the grid, whatever the
+    // filters/search say, and are left out of the main grid so they don't repeat.
+    const queue = upNextList();
+    const queued = new Set(queue.map(e => e.id));
+    upNextGrid.innerHTML = '';
+    queue.forEach(entry => upNextGrid.appendChild(buildCard(entry)));
+    upNextSection.hidden = entries.length === 0;
+    upNextCount.textContent = queue.length ? `${queue.length} / ${UP_NEXT_MAX}` : '';
+    upNextHint.hidden = queue.length > 0;
+
     grid.innerHTML = '';
-    visible.forEach(entry => grid.appendChild(buildCard(entry)));
+    visible.filter(e => !queued.has(e.id)).forEach(entry => grid.appendChild(buildCard(entry)));
 
     emptyState.hidden = entries.length !== 0;
     entryCount.textContent = visible.length === entries.length
@@ -1077,6 +1091,43 @@
     renderShelfContents();
   }
 
+  // ---- Up next: pin 1–3 fics to the top of the Catalog ----
+  const UP_NEXT_MAX = 3;
+  function upNextList() {
+    return entries
+      .filter(e => e.upNext)
+      .sort((a, b) => a.upNext - b.upNext)
+      .slice(0, UP_NEXT_MAX);
+  }
+
+  function setupUpNext(node, entry) {
+    const btn = node.querySelector('.stub-pin');
+    const paint = () => {
+      const on = !!entry.upNext;
+      btn.textContent = on ? 'up next ✓' : '＋ up next';
+      btn.classList.toggle('active', on);
+      btn.title = on ? 'Remove from Up next' : 'Pin to Up next (max 3)';
+      btn.setAttribute('aria-pressed', String(on));
+    };
+    paint();
+    btn.addEventListener('click', () => {
+      if (entry.upNext) {
+        entry.upNext = null;
+        showToast(`Took "${entry.title}" off Up next`);
+      } else {
+        if (entries.filter(e => e.upNext).length >= UP_NEXT_MAX) {
+          showToast(`Up next is full — unpin one of your ${UP_NEXT_MAX} first`);
+          return;
+        }
+        entry.upNext = Date.now();
+        showToast(`"${entry.title}" is up next`);
+      }
+      paint();
+      saveEntries();
+      render();
+    });
+  }
+
   function buildCard(entry) {
     const node = template.content.cloneNode(true);
     const card = node.querySelector('.card');
@@ -1115,6 +1166,7 @@
     setupTagInput(node, entry);
     setupNotes(node, entry);
     setupShelfPicker(node, entry);
+    setupUpNext(node, entry);
     setupStarRating(node, entry);
     setupAoTags(node, entry);
 
@@ -1678,10 +1730,10 @@
   document.getElementById('surpriseBtn').addEventListener('click', () => {
     if (view !== 'catalog') document.querySelector('.view-tab[data-view="catalog"]').click();
     const query = searchInput.value.trim().toLowerCase();
-    // Rated fics and anything on the "Reading" shelf are always skipped;
+    // Rated fics, anything on the "Reading" shelf and fics already Up next are skipped;
     // your filters narrow it further.
     const onReadingShelf = e => entryShelves(e).some(s => s.trim().toLowerCase() === 'reading');
-    const pool = entries.filter(e => !e.stars && !onReadingShelf(e) && matchesFilters(e, query));
+    const pool = entries.filter(e => !e.stars && !e.upNext && !onReadingShelf(e) && matchesFilters(e, query));
     if (!pool.length) {
       showToast(entries.length ? 'No unrated fics outside your Reading shelf match your filters' : 'File a fic first');
       return;
