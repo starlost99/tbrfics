@@ -159,12 +159,22 @@
   </div>
 
   <div id="shelvesView" hidden>
+    <div class="shelves-mode-switch" role="group" aria-label="Shelves layout">
+      <button type="button" class="btn-ghost mode-btn active" data-shelves-mode="rail">Rail</button>
+      <button type="button" class="btn-ghost mode-btn" data-shelves-mode="tower">Tower</button>
+    </div>
+    <div id="towerWrap" hidden>
+      <div class="tower" id="tower"></div>
+      <div class="tower-legend" id="towerLegend"></div>
+    </div>
+    <div id="railWrap">
     <div class="bookshelf-wrap">
       <div class="bookshelf-rail" id="bookshelfRail"></div>
       <div class="shelf-plank"></div>
     </div>
     <div id="shelfContents" class="shelf-contents">
       <p class="shelf-hint">Tap a spine to pull that shelf down.</p>
+    </div>
     </div>
   </div>
 

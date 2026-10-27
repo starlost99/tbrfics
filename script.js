@@ -30,6 +30,7 @@
 
   // ---- View state ----
   let view = 'catalog';   // 'catalog' | 'shelves'
+  let shelvesMode = 'rail'; // 'rail' (original bookshelf) | 'tower' (Booktower-style stacked shelves)
   let activeShelf = null; // 'unshelved' | a shelf name | null (nothing pulled down yet)
   let expandedRows = new Set(); // entry ids currently expanded to show full card details in the Shelves view
   let colorPickerOpen = false;  // whether the swatch picker is open for the active shelf
@@ -693,8 +694,116 @@
 
     renderBookshelf();
     if (view === 'shelves') renderShelfContents();
+    renderTower();
     renderLibrary();
   }
+
+  // ---- Tower (step 1: read-only) ----
+  // Every shelf is a plank; every fic on it is a little book spine coloured
+  // by its AO3 rating and sized by word count. Tapping a spine opens the card.
+  const TOWER_RATINGS = [
+    ['general', 'General'], ['teen', 'Teen'], ['mature', 'Mature'],
+    ['explicit', 'Explicit'], ['notrated', 'Not rated'],
+  ];
+
+  function spineHeightForWords(words) {
+    const w = Number(words) || 0;
+    if (!w) return 70;
+    // ~50px for a short one-shot up to ~110px for a doorstop, log-scaled
+    const t = Math.min(1, Math.max(0, (Math.log10(w) - 3) / 3));
+    return Math.round(50 + t * 60);
+  }
+
+  function buildTowerShelf(label, members, color) {
+    const row = document.createElement('section');
+    row.className = 'tower-shelf';
+
+    const head = document.createElement('div');
+    head.className = 'tower-shelf-head';
+    const name = document.createElement('span');
+    name.className = 'tower-shelf-name';
+    name.textContent = label;
+    if (color) name.style.setProperty('--shelf-color', color);
+    const count = document.createElement('span');
+    count.className = 'tower-shelf-count';
+    count.textContent = String(members.length);
+    head.appendChild(name);
+    head.appendChild(count);
+    row.appendChild(head);
+
+    const books = document.createElement('div');
+    books.className = 'tower-books';
+    if (members.length === 0) {
+      const empty = document.createElement('span');
+      empty.className = 'tower-empty';
+      empty.textContent = 'empty shelf';
+      books.appendChild(empty);
+    }
+    members.forEach(entry => {
+      const rating = (entry.rating && entry.rating[0]) || '';
+      const book = document.createElement('button');
+      book.type = 'button';
+      book.className = `tower-book tower-book-${ratingClass(rating)}`;
+      book.style.setProperty('--book-h', spineHeightForWords(entry.words) + 'px');
+      book.style.setProperty('--book-w', (16 + (hashString(entry.id || entry.title || '') % 4) * 3) + 'px');
+      book.title = entry.title || 'Untitled';
+      book.setAttribute('aria-label', entry.title || 'Untitled');
+      const t = document.createElement('span');
+      t.className = 'tower-book-title';
+      t.textContent = entry.title || 'Untitled';
+      book.appendChild(t);
+      book.addEventListener('click', () => openBookInfo(entry));
+      books.appendChild(book);
+    });
+    row.appendChild(books);
+    const plank = document.createElement('div');
+    plank.className = 'tower-plank';
+    row.appendChild(plank);
+    return row;
+  }
+
+  function renderTower() {
+    const tower = document.getElementById('tower');
+    const legend = document.getElementById('towerLegend');
+    if (!tower || !legend) return;
+    tower.innerHTML = '';
+    legend.innerHTML = '';
+
+    const query = searchInput.value.trim().toLowerCase();
+    const shown = sortEntries(entries.filter(e => matchesFilters(e, query)));
+
+    shelves.forEach(name => {
+      const members = shown.filter(e => entryShelves(e).includes(name));
+      tower.appendChild(buildTowerShelf(name, members, spineColorForShelf(name)));
+    });
+    const loose = shown.filter(e => entryShelves(e).length === 0);
+    if (loose.length || shelves.length === 0) {
+      tower.appendChild(buildTowerShelf('Unshelved', loose, null));
+    }
+
+    TOWER_RATINGS.forEach(([key, label]) => {
+      const item = document.createElement('span');
+      item.className = 'tower-legend-item';
+      const sw = document.createElement('i');
+      sw.className = `tower-book-${key}`;
+      item.appendChild(sw);
+      item.appendChild(document.createTextNode(label));
+      legend.appendChild(item);
+    });
+  }
+
+  function setShelvesMode(mode) {
+    shelvesMode = mode;
+    document.querySelectorAll('[data-shelves-mode]').forEach(b => {
+      b.classList.toggle('active', b.dataset.shelvesMode === mode);
+    });
+    document.getElementById('towerWrap').hidden = mode !== 'tower';
+    document.getElementById('railWrap').hidden = mode !== 'rail';
+    if (mode === 'tower') renderTower();
+  }
+  document.querySelectorAll('[data-shelves-mode]').forEach(b => {
+    b.addEventListener('click', () => setShelvesMode(b.dataset.shelvesMode));
+  });
 
   // ---- Shelves view ----
 
