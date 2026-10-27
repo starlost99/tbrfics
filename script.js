@@ -914,6 +914,17 @@
     return 30 + (hashString(key) % 5) * 4; // 30–46px, stable per shelf name
   }
 
+  // Full titles on the spines: measure the title, then make the spine tall enough
+  // (or wrap it onto extra lines when it would get too tall).
+  const spineMeasure = document.createElement('canvas').getContext('2d');
+  function measureSpineTitle(text) {
+    const rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    spineMeasure.font = `600 ${rootPx * 0.8}px Fraunces, Georgia, serif`;
+    return Math.ceil(spineMeasure.measureText(text).width * 1.06) + 4; // a little slack for letter-spacing
+  }
+  const SPINE_CHROME = 70;      // top band + padding above the title, count badge + padding below
+  const SPINE_MAX_H = 240;
+
   function renderBookshelf() {
     if (!bookshelfRail) return;
     bookshelfRail.innerHTML = '';
@@ -932,8 +943,14 @@
       if (!item.special) {
         spine.style.background = spineColorForShelf(item.key);
       }
-      spine.style.setProperty('--spine-w', spineWidth(item.key) + 'px');
-      spine.style.setProperty('--spine-h', (item.special ? 132 : 124 + (hashString(item.key + 'h') % 5) * 8) + 'px');
+      const baseH = item.special ? 132 : 124 + (hashString(item.key + 'h') % 5) * 8;
+      const textW = measureSpineTitle(item.label);
+      const capAvail = SPINE_MAX_H - SPINE_CHROME;
+      const lines = Math.max(1, Math.ceil(textW / capAvail));
+      const lineLen = lines === 1 ? textW : Math.ceil(textW / lines) + 26;   // slack so words can break
+      const spineH = Math.max(baseH, Math.min(SPINE_MAX_H, lineLen + SPINE_CHROME));
+      spine.style.setProperty('--spine-w', (spineWidth(item.key) + (lines - 1) * 15) + 'px');
+      spine.style.setProperty('--spine-h', spineH + 'px');
       spine.style.setProperty('--i', String(bookshelfRail.children.length));
       spine.title = `${item.label} (${count})`;
       spine.addEventListener('click', () => {
@@ -946,6 +963,10 @@
       const label = document.createElement('span');
       label.className = 'spine-label';
       label.textContent = item.label;
+      if (lines > 1) {
+        label.classList.add('wrap');
+        label.style.maxHeight = (spineH - SPINE_CHROME) + 'px';
+      }
       spine.appendChild(label);
 
       const badge = document.createElement('span');
@@ -963,6 +984,10 @@
     addSpine.textContent = '+';
     addSpine.addEventListener('click', addShelf);
     bookshelfRail.appendChild(addSpine);
+  }
+
+  if (document.fonts && document.fonts.status !== 'loaded') {
+    document.fonts.ready.then(() => renderBookshelf());
   }
 
   function renderShelfContents() {
