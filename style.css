@@ -2734,3 +2734,22 @@ html[data-glow="pink"] {               /* light mode, pink alternative */
 .book-cover-cloth.cloth-notrated { --cloth: #8B7783; }  /* dusty mauve-grey */
 .book-cover-cloth .book-rating { color: #F6E2B6; }   /* same warm cream-gold on every cover */
 .book-cover-cloth .book-meta { white-space: pre-line; opacity: .8; line-height: 1.35; }
+
+/* ---- Surprise me options ---- */
+.surprise-opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  margin: 0.6rem 0 0.9rem;
+}
+.surprise-opts label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+  min-width: 0;
+}
+.surprise-opts select { font-size: 0.8rem; max-width: 11rem; }

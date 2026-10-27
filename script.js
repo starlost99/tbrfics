@@ -681,6 +681,7 @@
     grid.innerHTML = '';
     visible.filter(e => !queued.has(e.id)).forEach(entry => grid.appendChild(buildCard(entry)));
 
+    if (typeof populateSurpriseTags === 'function') populateSurpriseTags();
     emptyState.hidden = entries.length !== 0;
     entryCount.textContent = visible.length === entries.length
       ? `${entries.length} card${entries.length === 1 ? '' : 's'} on file`
@@ -2056,17 +2057,86 @@
     searchTimer = setTimeout(render, 150);
   });
 
-  // ---- Surprise me: random unrated fic from whatever your filters currently show ----
+  // ---- Surprise me: random fic from whatever your filters currently show ----
+  // Narrow it with length / complete-only / one of your own tags (moods) / unrated-vs-any.
+  const SURPRISE_KEY = 'tbr-stacks-surprise-v1';
+  const surpriseSel = {
+    length: document.getElementById('surpriseLength'),
+    status: document.getElementById('surpriseStatus'),
+    tag: document.getElementById('surpriseTag'),
+    pool: document.getElementById('surprisePool'),
+  };
+  let surpriseTagWanted = '';
+  try {
+    const saved = JSON.parse(localStorage.getItem(SURPRISE_KEY) || '{}');
+    if (saved.length) surpriseSel.length.value = saved.length;
+    if (saved.status) surpriseSel.status.value = saved.status;
+    if (saved.pool) surpriseSel.pool.value = saved.pool;
+    surpriseTagWanted = saved.tag || '';
+  } catch (e) { /* ignore */ }
+  if (!surpriseSel.length.value) surpriseSel.length.value = 'any';
+  if (!surpriseSel.status.value) surpriseSel.status.value = 'any';
+  if (!surpriseSel.pool.value) surpriseSel.pool.value = 'unrated';
+
+  function saveSurpriseOpts() {
+    surpriseTagWanted = surpriseSel.tag.value;
+    try {
+      localStorage.setItem(SURPRISE_KEY, JSON.stringify({
+        length: surpriseSel.length.value, status: surpriseSel.status.value,
+        tag: surpriseSel.tag.value, pool: surpriseSel.pool.value,
+      }));
+    } catch (e) { /* ignore */ }
+  }
+  Object.values(surpriseSel).forEach(sel => sel.addEventListener('change', saveSurpriseOpts));
+
+  // Keep the tag dropdown in step with your tags (called after every render)
+  function populateSurpriseTags() {
+    const sel = surpriseSel.tag;
+    const want = sel.value || surpriseTagWanted;
+    const tags = allTags();
+    sel.innerHTML = '';
+    const any = document.createElement('option');
+    any.value = ''; any.textContent = 'Any of my tags';
+    sel.appendChild(any);
+    tags.forEach(t => {
+      const o = document.createElement('option');
+      o.value = t; o.textContent = t;
+      sel.appendChild(o);
+    });
+    sel.value = tags.includes(want) ? want : '';
+  }
+
+  function surpriseLengthOk(e, mode) {
+    if (mode === 'any') return true;
+    const w = Number(e.words) || 0;
+    if (!w) return false;               // no word count, can't say how long it is
+    if (mode === 'quick') return w < 5000;
+    if (mode === 'medium') return w >= 5000 && w < 20000;
+    return w >= 20000;
+  }
+
   let lastSurpriseId = null;
   document.getElementById('surpriseBtn').addEventListener('click', () => {
     if (view !== 'catalog') document.querySelector('.view-tab[data-view="catalog"]').click();
     const query = searchInput.value.trim().toLowerCase();
-    // Rated fics, anything on the "Reading" shelf and fics already Up next are skipped;
+    const lengthMode = surpriseSel.length.value;
+    const completeOnly = surpriseSel.status.value === 'complete';
+    const tag = surpriseSel.tag.value;
+    const unratedOnly = surpriseSel.pool.value === 'unrated';
+    const custom = lengthMode !== 'any' || completeOnly || tag || !unratedOnly;
+    // Anything on the "Reading" shelf and fics already Up next are always skipped;
     // your filters narrow it further.
     const onReadingShelf = e => entryShelves(e).some(s => s.trim().toLowerCase() === 'reading');
-    const pool = entries.filter(e => !e.stars && !e.upNext && !onReadingShelf(e) && matchesFilters(e, query));
+    const pool = entries.filter(e =>
+      (!unratedOnly || !e.stars) && !e.upNext && !onReadingShelf(e) &&
+      surpriseLengthOk(e, lengthMode) &&
+      (!completeOnly || e.complete) &&
+      (!tag || (e.tags || []).includes(tag)) &&
+      matchesFilters(e, query));
     if (!pool.length) {
-      showToast(entries.length ? 'No unrated fics outside your Reading shelf match your filters' : 'File a fic first');
+      showToast(entries.length
+        ? (custom ? 'Nothing matches your Surprise options — try loosening them' : 'No unrated fics outside your Reading shelf match your filters')
+        : 'File a fic first');
       return;
     }
     const choices = pool.length > 1 ? pool.filter(e => e.id !== lastSurpriseId) : pool;
@@ -2077,6 +2147,8 @@
     window.scrollTo({ top: Math.max(0, grid.getBoundingClientRect().top + window.scrollY - 90), behavior: 'smooth' });
     showToast(`How about "${pick.title}"?`);
   });
+
+  populateSurpriseTags();
 
   sortSelect.addEventListener('change', () => {
     pinnedId = null;

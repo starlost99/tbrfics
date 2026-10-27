@@ -71,7 +71,34 @@
         <details class="filter-panel" id="filterPanel">
           <summary>Filters <span class="filter-count" id="filterCount" hidden></span></summary>
           <div class="filter-body">
-            <button type="button" id="surpriseBtn" class="btn-ghost btn-surprise" title="Pick a random unrated fic from what's showing (skips your Reading shelf)">✦ Surprise me</button>
+            <button type="button" id="surpriseBtn" class="btn-ghost btn-surprise" title="Pick a random fic from what's showing (skips your Reading shelf) — narrow it down with the options below">✦ Surprise me</button>
+            <div class="surprise-opts" id="surpriseOpts">
+              <label>Length
+                <select id="surpriseLength" class="sort-select">
+                  <option value="any">Any length</option>
+                  <option value="quick">Quick · under 5k</option>
+                  <option value="medium">Medium · 5k–20k</option>
+                  <option value="long">Long · 20k+</option>
+                </select>
+              </label>
+              <label>Status
+                <select id="surpriseStatus" class="sort-select">
+                  <option value="any">Complete or not</option>
+                  <option value="complete">Complete only</option>
+                </select>
+              </label>
+              <label>Mood / tag
+                <select id="surpriseTag" class="sort-select">
+                  <option value="">Any of my tags</option>
+                </select>
+              </label>
+              <label>From
+                <select id="surprisePool" class="sort-select">
+                  <option value="unrated">Unrated only</option>
+                  <option value="all">Rated too</option>
+                </select>
+              </label>
+            </div>
             <div class="filter-group">
               <p class="filter-label">Sort by</p>
               <select id="sortSelect" class="sort-select">
