@@ -2729,8 +2729,8 @@ html[data-glow="pink"] {               /* light mode, pink alternative */
 /* ---- cloth covers are coloured by rating ---- */
 .book-cover-cloth.cloth-general  { --cloth: #9A8CC4; }  /* lavender */
 .book-cover-cloth.cloth-teen     { --cloth: #D296AB; }  /* pink */
-.book-cover-cloth.cloth-mature   { --cloth: #98596D; }  /* dusty rose */
-.book-cover-cloth.cloth-explicit { --cloth: #765670; }  /* plum */
+.book-cover-cloth.cloth-mature   { --cloth: #765670; }  /* plum */
+.book-cover-cloth.cloth-explicit { --cloth: #98596D; }  /* dusty rose */
 .book-cover-cloth.cloth-notrated { --cloth: #8B7783; }  /* dusty mauve-grey */
 .book-cover-cloth .book-rating { color: #F6E2B6; }   /* same warm cream-gold on every cover */
 .book-cover-cloth .book-meta { white-space: pre-line; opacity: .8; line-height: 1.35; }
