@@ -19,10 +19,13 @@
   let activeTags = new Set();      // your own custom tags — OR match
   let activeRatings = new Set();   // AO3 rating — OR match
   let statusFilter = 'all';        // 'all' | 'complete' | 'wip'
+  let hideReading = false;         // true = leave out fics filed on the "Reading" shelf
   let starFilter = 0;              // 0 = no filter, else "at least N stars"
   let ratedFilter = 'all';         // 'all' | 'rated' | 'unrated'
   let wordMin = null;
   let wordMax = null;
+  let minutesMin = null;           // estimated minutes to read (words ÷ READING_WPM)
+  let minutesMax = null;
   let activeAoTags = new Set();    // fandom/relationship/character/freeform — AND match
   let aoTagQuery = '';
   let sortBy = 'dateAdded-desc';   // shared between Catalog and Shelves
@@ -255,6 +258,8 @@
   const starRail = document.getElementById('starRail');
   const wordMinInput = document.getElementById('wordMinInput');
   const wordMaxInput = document.getElementById('wordMaxInput');
+  const minutesMinInput = document.getElementById('minutesMinInput');
+  const minutesMaxInput = document.getElementById('minutesMaxInput');
   const sortSelect = document.getElementById('sortSelect');
   const aoTagSearch = document.getElementById('aoTagSearch');
   const aoTagRail = document.getElementById('aoTagRail');
@@ -353,12 +358,17 @@
     activeRatings.clear();
     activeAoTags.clear();
     statusFilter = 'all';
+    hideReading = false;
     starFilter = 0;
     ratedFilter = 'all';
     wordMin = null;
     wordMax = null;
+    minutesMin = null;
+    minutesMax = null;
     wordMinInput.value = '';
     wordMaxInput.value = '';
+    minutesMinInput.value = '';
+    minutesMaxInput.value = '';
     aoTagQuery = '';
     aoTagSearch.value = '';
     searchInput.value = '';
@@ -445,6 +455,17 @@
       });
       statusRail.appendChild(chip);
     });
+    // separate on/off switch: leave out anything filed on the Reading shelf
+    const readingChip = document.createElement('button');
+    readingChip.type = 'button';
+    readingChip.className = 'tag-chip chip-hide-reading' + (hideReading ? ' active' : '');
+    readingChip.setAttribute('aria-pressed', String(hideReading));
+    readingChip.textContent = 'Hide Reading shelf';
+    readingChip.addEventListener('click', () => {
+      hideReading = !hideReading;
+      render();
+    });
+    statusRail.appendChild(readingChip);
   }
 
   function renderRatedToggle() {
@@ -511,10 +532,13 @@
   function activeFilterCount() {
     return activeTags.size + activeRatings.size + activeAoTags.size +
       (statusFilter !== 'all' ? 1 : 0) +
+      (hideReading ? 1 : 0) +
       (starFilter > 0 ? 1 : 0) +
       (ratedFilter !== 'all' ? 1 : 0) +
       (wordMin !== null ? 1 : 0) +
-      (wordMax !== null ? 1 : 0);
+      (wordMax !== null ? 1 : 0) +
+      (minutesMin !== null ? 1 : 0) +
+      (minutesMax !== null ? 1 : 0);
   }
 
   function renderFilterCount() {
@@ -533,6 +557,7 @@
 
     if (statusFilter === 'complete' && entry.complete !== true) return false;
     if (statusFilter === 'wip' && entry.complete !== false) return false;
+    if (hideReading && entryShelves(entry).some(sh => sh.trim().toLowerCase() === 'reading')) return false;
 
     if (starFilter > 0 && (entry.stars || 0) < starFilter) return false;
     if (ratedFilter === 'rated' && !entry.stars) return false;
@@ -540,6 +565,13 @@
 
     if (wordMin !== null && (entry.words === null || entry.words === undefined || entry.words < wordMin)) return false;
     if (wordMax !== null && (entry.words === null || entry.words === undefined || entry.words > wordMax)) return false;
+
+    if (minutesMin !== null || minutesMax !== null) {
+      if (!entry.words) return false;                                   // no word count, no read time
+      const mins = Math.max(1, Math.round(entry.words / READING_WPM));  // same maths as the "min read" label
+      if (minutesMin !== null && mins < minutesMin) return false;
+      if (minutesMax !== null && mins > minutesMax) return false;
+    }
 
     if (activeAoTags.size > 0) {
       const tags = entryAoTags(entry);
@@ -2160,6 +2192,14 @@
     wordMin = wordMinInput.value === '' ? null : Math.max(0, parseInt(wordMinInput.value, 10) || 0);
     render();
   });
+  minutesMinInput.addEventListener('input', () => {
+    minutesMin = minutesMinInput.value === '' ? null : Math.max(0, parseInt(minutesMinInput.value, 10) || 0);
+    render();
+  });
+  minutesMaxInput.addEventListener('input', () => {
+    minutesMax = minutesMaxInput.value === '' ? null : Math.max(0, parseInt(minutesMaxInput.value, 10) || 0);
+    render();
+  });
   wordMaxInput.addEventListener('input', () => {
     wordMax = wordMaxInput.value === '' ? null : Math.max(0, parseInt(wordMaxInput.value, 10) || 0);
     render();
@@ -2177,12 +2217,17 @@
     activeRatings.clear();
     activeAoTags.clear();
     statusFilter = 'all';
+    hideReading = false;
     starFilter = 0;
     ratedFilter = 'all';
     wordMin = null;
     wordMax = null;
+    minutesMin = null;
+    minutesMax = null;
     wordMinInput.value = '';
     wordMaxInput.value = '';
+    minutesMinInput.value = '';
+    minutesMaxInput.value = '';
     aoTagQuery = '';
     aoTagSearch.value = '';
     render();

@@ -140,6 +140,15 @@
             </div>
 
             <div class="filter-group">
+              <p class="filter-label">Minutes to read</p>
+              <div class="range-row">
+                <input type="number" id="minutesMinInput" placeholder="min" min="0" inputmode="numeric">
+                <span class="range-dash">–</span>
+                <input type="number" id="minutesMaxInput" placeholder="max" min="0" inputmode="numeric">
+              </div>
+            </div>
+
+            <div class="filter-group">
               <p class="filter-label">Fandom, relationship, character &amp; additional tags</p>
               <input type="search" id="aoTagSearch" placeholder="search tags…" autocomplete="off">
               <div class="chip-row" id="aoTagRail"></div>
