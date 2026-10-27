@@ -2494,3 +2494,9 @@ html[data-glow="pink"] {               /* light mode, pink alternative */
   box-shadow: none;
   padding: 0.9rem 0.75rem 1.05rem;
 }
+
+/* ---- touch screens have no real hover: a tapped row used to stay "hovered" (highlighted) after closing ---- */
+@media (hover: none) {
+  .shelf-row:hover:not(.open):not(:focus-visible) { background: transparent; }
+  .shelf-row-wrap:hover { box-shadow: none; transform: none; }
+}
