@@ -2288,11 +2288,23 @@ dialog[open]::backdrop { animation: backdrop-in 0.3s ease; }
    and warm the masthead text above (--lit = share of bulbs switched on). */
 :root {
   --wire: #C98CB2;
-  --bulb-rgb: 244, 144, 108;
-  --text-warm: #C8664A;
+  --bulb-rgb: 208, 66, 122;            /* deeper pink glow in light mode */
+  --text-warm: #B8366B;
+  --bulb-core: #FFE0EC;
+  --bulb-mid: #F594B8;
+  --bulb-edge: #D6477F;
+  --bulb-rim: #C93A73;
 }
 @media (prefers-color-scheme: dark) {
-  :root { --wire: #D6A0C2; --text-warm: #F29A78; }
+  :root {
+    --wire: #D6A0C2;
+    --bulb-rgb: 250, 176, 208;         /* lighter, softer pink glow in dark mode */
+    --text-warm: #F8B4D2;
+    --bulb-core: #FFF3F8;
+    --bulb-mid: #FCCDE0;
+    --bulb-edge: #F7A6C8;
+    --bulb-rim: #F29BC0;
+  }
 }
 .masthead { border-bottom: 0; --lit: 1; }
 .string-lights {
@@ -2335,7 +2347,7 @@ dialog[open]::backdrop { animation: backdrop-in 0.3s ease; }
   border: 0;
   border-radius: 50%;
   background: radial-gradient(circle at 50% 50%,
-    #FFEBE0 0 20%, #FDC3A9 45%, #F6966F 82%, #EC8460 100%);
+    var(--bulb-core) 0 20%, var(--bulb-mid) 45%, var(--bulb-edge) 82%, var(--bulb-rim) 100%);
   box-shadow:
     0 0 0 .75px rgba(var(--bulb-rgb), .5),
     0 0 4px 1px rgba(var(--bulb-rgb), .75),
@@ -2387,7 +2399,18 @@ dialog[open]::backdrop { animation: backdrop-in 0.3s ease; }
 .masthead .eyebrow {
   text-shadow: 0 0 8px rgba(var(--bulb-rgb), calc(var(--lit) * .5));
 }
+/* "x cards on file" catches the light too, but in light mode only */
+.masthead .masthead-count {
+  transition: color .5s ease, text-shadow .5s ease;
+  color: color-mix(in srgb, var(--text-warm) calc(var(--lit) * 50%), var(--ink-soft));
+  text-shadow:
+    0 0 8px rgba(var(--bulb-rgb), calc(var(--lit) * .5)),
+    0 0 18px rgba(var(--bulb-rgb), calc(var(--lit) * .3));
+}
+@media (prefers-color-scheme: dark) {
+  .masthead .masthead-count { color: var(--ink-soft); text-shadow: none; }
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .bulb, .bulb::before, .masthead h1, .masthead .tagline, .masthead .eyebrow { transition: none; }
+  .bulb, .bulb::before, .masthead h1, .masthead .tagline, .masthead .eyebrow, .masthead .masthead-count { transition: none; }
 }
