@@ -112,12 +112,20 @@
   }
 
   // ---- Pick up new fic from URL params (from the AO3 "Info" button) ----
+  // Same rule as the userscript: one address per AO3 work, whichever page
+  // (chapter, ?view_adult, #comments…) it was filed from.
+  function normalizeWorkUrl(href) {
+    if (!href) return '';
+    const m = href.match(/^https?:\/\/(?:www\.)?archiveofourown\.(?:org|com|net)\/works\/(\d+)/);
+    return m ? 'https://archiveofourown.org/works/' + m[1] : href;
+  }
+
   function ingestFromURL() {
     const params = new URLSearchParams(window.location.search);
     const title = params.get('title');
     if (!title) return;
 
-    const url = params.get('url') || '';
+    const url = normalizeWorkUrl(params.get('url') || '');
     const authors = params.get('authors') || 'Anonymous';
     const summary = params.get('summary') || '';
     const tagsParam = params.get('tags');
@@ -149,7 +157,7 @@
     const aoTagsParam = params.get('aoTags');
     const aoTags = aoTagsParam ? aoTagsParam.split(',').map(t => t.trim()).filter(Boolean) : [];
 
-    const dupe = url && entries.find(e => e.url === url);
+    const dupe = url && entries.find(e => normalizeWorkUrl(e.url) === url);
     if (!dupe) {
       entries.unshift({
         id: uid(),
@@ -185,7 +193,7 @@
       const prevChapters = dupe.chapters;
       pinnedId = dupe.id;
       Object.assign(dupe, {
-        title, authors, summary,
+        url, title, authors, summary,
         rating, warnings, category,
         fandoms, relationships, characters, freeform,
         words, kudos, chapters, complete,
