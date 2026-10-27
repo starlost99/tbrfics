@@ -2729,5 +2729,5 @@ html[data-glow="pink"] {               /* light mode, pink alternative */
 .book-cover-cloth.cloth-mature   { --cloth: #A85D76; }  /* deep rose */
 .book-cover-cloth.cloth-explicit { --cloth: #7A3F5F; }  /* plum  */
 .book-cover-cloth.cloth-notrated { --cloth: #8B7783; }  /* dusty mauve-grey */
-.book-cover-cloth .book-rating { color: #FFF3DA; opacity: .95; }
+.book-cover-cloth .book-rating { color: #F6E2B6; }   /* same warm cream-gold on every cover */
 .book-cover-cloth .book-meta { white-space: pre-line; opacity: .8; line-height: 1.35; }
