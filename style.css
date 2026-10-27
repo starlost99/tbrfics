@@ -1396,7 +1396,6 @@ dialog h2 {
 .auth-note { font-size: .85rem; color: var(--ink-soft); margin: 0 0 .75rem; }
 .auth-msg { min-height: 1.2em; font-size: .85rem; color: var(--coral); margin: .5rem 0 0; }
 #authDialog .dialog-actions { flex-wrap: wrap; }
-#accountBtn.signed-in::before { content: "● "; color: #5a9a6b; }
 #accountBtn.offline::before { content: "● "; color: var(--gold); }
 
 /* ---- unified controls (search, tabs, panels share one look) ---- */
@@ -2295,7 +2294,7 @@ dialog[open]::backdrop { animation: backdrop-in 0.3s ease; }
   --bulb-edge: #F6966F;
   --bulb-rim: #EC8460;
   --glow-amt: .4;                      /* light mode: keep the illumination subtle */
-  --switch-rgb: 208, 66, 122;          /* wall switch stays pink, whatever the light colour */
+  --switch-rgb: 168, 93, 118;          /* wall switch = the "All" button rose (#A85D76), whatever the light colour */
 }
 html[data-glow="pink"] {               /* light mode, pink alternative */
   --bulb-rgb: 208, 66, 122;
@@ -2470,6 +2469,13 @@ html[data-glow="pink"] {               /* light mode, pink alternative */
   top: 17px;
   background: color-mix(in srgb, var(--ink-soft) 45%, var(--surface));
   box-shadow: none;
+}
+
+/* light mode + gold/peach lights: the lights don't illuminate the text at all */
+@media (prefers-color-scheme: light) {
+  :root:not([data-glow="pink"]) .masthead h1 { color: var(--ink); text-shadow: none; }
+  :root:not([data-glow="pink"]) .masthead .tagline { color: var(--ink-soft); text-shadow: none; }
+  :root:not([data-glow="pink"]) .masthead .eyebrow { text-shadow: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
