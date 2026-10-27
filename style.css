@@ -2288,7 +2288,17 @@ dialog[open]::backdrop { animation: backdrop-in 0.3s ease; }
    and warm the masthead text above (--lit = share of bulbs switched on). */
 :root {
   --wire: #C98CB2;
-  --bulb-rgb: 208, 66, 122;            /* deeper pink glow in light mode */
+  --bulb-rgb: 244, 144, 108;           /* light mode default: soft peach */
+  --text-warm: #C8664A;
+  --bulb-core: #FFEBE0;
+  --bulb-mid: #FDC3A9;
+  --bulb-edge: #F6966F;
+  --bulb-rim: #EC8460;
+  --glow-amt: .4;                      /* light mode: keep the illumination subtle */
+  --switch-rgb: 208, 66, 122;          /* wall switch stays pink, whatever the light colour */
+}
+html[data-glow="pink"] {               /* light mode, pink alternative */
+  --bulb-rgb: 208, 66, 122;
   --text-warm: #B8366B;
   --bulb-core: #FFE0EC;
   --bulb-mid: #F594B8;
@@ -2296,14 +2306,25 @@ dialog[open]::backdrop { animation: backdrop-in 0.3s ease; }
   --bulb-rim: #C93A73;
 }
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root,
+  html[data-glow="pink"] {             /* dark mode default: lighter pink */
     --wire: #D6A0C2;
-    --bulb-rgb: 250, 176, 208;         /* lighter, softer pink glow in dark mode */
+    --bulb-rgb: 250, 176, 208;
     --text-warm: #F8B4D2;
     --bulb-core: #FFF3F8;
     --bulb-mid: #FCCDE0;
     --bulb-edge: #F7A6C8;
     --bulb-rim: #F29BC0;
+    --glow-amt: 1;
+    --switch-rgb: 250, 176, 208;
+  }
+  html[data-glow="peach"] {            /* dark mode, classic peach alternative */
+    --bulb-rgb: 244, 144, 108;
+    --text-warm: #F29A78;
+    --bulb-core: #FFEBE0;
+    --bulb-mid: #FDC3A9;
+    --bulb-edge: #F6966F;
+    --bulb-rim: #EC8460;
   }
 }
 .masthead { border-bottom: 0; --lit: 1; }
@@ -2349,9 +2370,9 @@ dialog[open]::backdrop { animation: backdrop-in 0.3s ease; }
   background: radial-gradient(circle at 50% 50%,
     var(--bulb-core) 0 20%, var(--bulb-mid) 45%, var(--bulb-edge) 82%, var(--bulb-rim) 100%);
   box-shadow:
-    0 0 0 .75px rgba(var(--bulb-rgb), .5),
-    0 0 4px 1px rgba(var(--bulb-rgb), .75),
-    0 0 11px 4px rgba(var(--bulb-rgb), .3);
+    0 0 0 .75px rgba(var(--bulb-rgb), calc(.5 * var(--glow-amt))),
+    0 0 4px 1px rgba(var(--bulb-rgb), calc(.75 * var(--glow-amt))),
+    0 0 11px 4px rgba(var(--bulb-rgb), calc(.3 * var(--glow-amt)));
   cursor: pointer;
   pointer-events: auto;
   transition: background .35s ease, box-shadow .35s ease;
@@ -2362,7 +2383,7 @@ dialog[open]::backdrop { animation: backdrop-in 0.3s ease; }
   position: absolute;
   inset: -18px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(var(--bulb-rgb), .22) 0%, rgba(var(--bulb-rgb), .08) 45%, transparent 72%);
+  background: radial-gradient(circle, rgba(var(--bulb-rgb), calc(.22 * var(--glow-amt))) 0%, rgba(var(--bulb-rgb), calc(.08 * var(--glow-amt))) 45%, transparent 72%);
   pointer-events: none;
   transition: opacity .35s ease;
 }
@@ -2387,41 +2408,17 @@ dialog[open]::backdrop { animation: backdrop-in 0.3s ease; }
 .masthead h1 {
   color: color-mix(in srgb, var(--text-warm) calc(var(--lit) * 62%), var(--ink));
   text-shadow:
-    0 0 10px rgba(var(--bulb-rgb), calc(var(--lit) * .5)),
-    0 0 26px rgba(var(--bulb-rgb), calc(var(--lit) * .35));
+    0 0 10px rgba(var(--bulb-rgb), calc(var(--lit) * .5 * var(--glow-amt))),
+    0 0 26px rgba(var(--bulb-rgb), calc(var(--lit) * .35 * var(--glow-amt)));
 }
 .masthead .tagline {
   color: color-mix(in srgb, var(--text-warm) calc(var(--lit) * 45%), var(--ink-soft));
   text-shadow:
-    0 0 8px rgba(var(--bulb-rgb), calc(var(--lit) * .55)),
-    0 0 20px rgba(var(--bulb-rgb), calc(var(--lit) * .35));
+    0 0 8px rgba(var(--bulb-rgb), calc(var(--lit) * .55 * var(--glow-amt))),
+    0 0 20px rgba(var(--bulb-rgb), calc(var(--lit) * .35 * var(--glow-amt)));
 }
 .masthead .eyebrow {
-  text-shadow: 0 0 8px rgba(var(--bulb-rgb), calc(var(--lit) * .5));
-}
-/* "x cards on file" catches the light too, but in light mode only */
-.masthead .masthead-count {
-  transition: color .5s ease, text-shadow .5s ease;
-  color: color-mix(in srgb, var(--text-warm) calc(var(--lit) * 50%), var(--ink-soft));
-  text-shadow:
-    0 0 8px rgba(var(--bulb-rgb), calc(var(--lit) * .5)),
-    0 0 18px rgba(var(--bulb-rgb), calc(var(--lit) * .3));
-}
-@media (prefers-color-scheme: dark) {
-  .masthead .masthead-count { color: var(--ink-soft); text-shadow: none; }
-}
-
-/* ---- classic peach glow (tap the books to switch), light + dark ---- */
-html[data-glow="peach"] {
-  --bulb-rgb: 244, 144, 108;
-  --text-warm: #C8664A;
-  --bulb-core: #FFEBE0;
-  --bulb-mid: #FDC3A9;
-  --bulb-edge: #F6966F;
-  --bulb-rim: #EC8460;
-}
-@media (prefers-color-scheme: dark) {
-  html[data-glow="peach"] { --text-warm: #F29A78; }
+  text-shadow: 0 0 8px rgba(var(--bulb-rgb), calc(var(--lit) * .5 * var(--glow-amt)));
 }
 
 /* the books are a button now */
@@ -2465,8 +2462,8 @@ html[data-glow="peach"] {
   top: 4px;
   height: 13px;
   border-radius: 3px;
-  background: rgb(var(--bulb-rgb));
-  box-shadow: 0 0 8px rgba(var(--bulb-rgb), .75);
+  background: rgb(var(--switch-rgb));
+  box-shadow: 0 0 8px rgba(var(--switch-rgb), .75);
   transition: top .2s ease, background .35s ease, box-shadow .35s ease;
 }
 .glow-switch[aria-checked="false"] .gs-rocker {   /* off: rocker down, dull */
@@ -2477,5 +2474,5 @@ html[data-glow="peach"] {
 
 @media (prefers-reduced-motion: reduce) {
   .gs-rocker, .masthead-books { transition: none; }
-  .bulb, .bulb::before, .masthead h1, .masthead .tagline, .masthead .eyebrow, .masthead .masthead-count { transition: none; }
+  .bulb, .bulb::before, .masthead h1, .masthead .tagline, .masthead .eyebrow { transition: none; }
 }

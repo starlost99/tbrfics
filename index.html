@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
-<script>try { var g = localStorage.getItem('tbr-stacks-glow'); if (g === 'peach') document.documentElement.dataset.glow = 'peach'; } catch (e) {}</script>
+<script>try { var g = localStorage.getItem('tbr-stacks-glow'); if (g === 'peach' || g === 'pink') document.documentElement.dataset.glow = g; } catch (e) {}</script>
 </head>
 <body>
 
@@ -382,10 +382,12 @@
     const books = document.getElementById('booksBtn');
     if (books) {
       const flip = () => {
-        const peach = document.documentElement.dataset.glow !== 'peach';
-        if (peach) document.documentElement.dataset.glow = 'peach';
-        else delete document.documentElement.dataset.glow;
-        try { localStorage.setItem('tbr-stacks-glow', peach ? 'peach' : 'pink'); } catch (e) {}
+        // light mode starts on peach, dark mode on pink; each tap picks the other one
+        const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const cur = document.documentElement.dataset.glow || (dark ? 'pink' : 'peach');
+        const next = cur === 'pink' ? 'peach' : 'pink';
+        document.documentElement.dataset.glow = next;
+        try { localStorage.setItem('tbr-stacks-glow', next); } catch (e) {}
       };
       books.addEventListener('click', flip);
       books.addEventListener('keydown', e => {
