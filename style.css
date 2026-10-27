@@ -2647,3 +2647,37 @@ html[data-glow="pink"] {               /* light mode, pink alternative */
   .book-cover-cloth { padding: 2.2rem 0.7rem 0.8rem 1.3rem; }
   .book-cover-cloth .book-title { font-size: 0.92rem; }
 }
+
+/* =====================================================================
+   Books stay on the shelf
+   - The plank lines used to stay put while the books scrolled past them,
+     so books ended up floating mid-shelf. They now scroll WITH the books
+     (background-attachment: local), and scrolling snaps one whole shelf
+     at a time so a row never stops half-cut-off.
+   - Hovering no longer lifts a book off its plank.
+   ===================================================================== */
+.tower-books {
+  box-sizing: border-box;
+  padding-bottom: 7px;                 /* room for the last row's plank */
+  max-height: 194px;                   /* exactly two shelves (90 + 7) x 2 */
+  background-attachment: local;        /* planks travel with the books */
+  scroll-snap-type: y mandatory;
+  overscroll-behavior: contain;
+}
+.tower-book { scroll-snap-align: start; }
+.tower-book:hover,
+.tower-book:focus-visible {
+  transform: none;
+  filter: brightness(1.08) saturate(1.1);
+}
+.tower-book:hover .tower-book-body,
+.tower-book:focus-visible .tower-book-body {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 80%, white);
+}
+
+/* close-up bookcase covers: stay planted on the plank too */
+.book-cover-cloth:hover,
+.book-cover-cloth:focus-visible {
+  transform: none;
+  filter: brightness(1.08);
+}
