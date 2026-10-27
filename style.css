@@ -2267,3 +2267,15 @@ dialog[open]::backdrop { animation: backdrop-in 0.3s ease; }
   grid-column: 1 / -1; margin: 0; padding: 1rem 0.5rem 0; text-align: center;
   font-size: 0.85rem; font-style: italic; color: var(--wood-light);
 }
+
+/* ---- Shelves/Library: "Search & filters" row sits vertically centred, flush left ---- */
+.controls-collapse.shelves-mode { margin-top: 0; }   /* the extra top margin was pushing the label down */
+.controls:has(> .controls-collapse.shelves-mode) {
+  padding-top: 0.9rem;
+  padding-bottom: 0.9rem;
+}
+.controls-collapse.shelves-mode > .controls-summary {
+  padding: 0;
+  line-height: 1.2;
+}
+.controls-collapse.shelves-mode[open] > .controls-collapse-body { padding-top: 0.9rem; }
