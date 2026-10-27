@@ -1683,16 +1683,68 @@ dialog h2 {
 .spine:hover { transform: translateY(-5px); }
 .spine.active { transform: translateY(-16px); }
 
-/* ---- Surprise me: sits just under the filters panel ---- */
+/* ---- Surprise me: lives inside the Filters panel ---- */
+.filter-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .btn-surprise {
-  display: block;
-  margin-top: var(--ctl-gap);
-  padding: 0.55rem 1.1rem;
-  border: var(--ctl-border);
-  border-radius: 999px;
-  background: var(--surface);
+  align-self: flex-start;
+  font-size: 0.78rem;
+  padding: 0.4rem 0.8rem;
   color: var(--rose-deep);
-  font-size: 0.85rem;
 }
 .btn-surprise:hover { background: var(--rose-deep); color: var(--surface); border-color: var(--rose-deep); }
-.btn-surprise:focus-visible { outline: 2px solid var(--rose-deep); outline-offset: 2px; }
+
+/* ---- Smoother menus ---- */
+.my-tags-panel > summary::after,
+.filter-panel > summary::after {
+  transition: transform 0.4s cubic-bezier(0.22, 0.7, 0.2, 1);
+}
+/* chevron flips straight away while the panel is still rolling shut */
+.my-tags-panel.is-closing > summary::after,
+.filter-panel.is-closing > summary::after {
+  transform: rotate(45deg) translateY(-2px);
+}
+.my-tags-panel > summary,
+.filter-panel > summary,
+.shelf-picker-summary,
+.ao-tags summary {
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+.my-tags-panel,
+.filter-panel {
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.my-tags-panel[open],
+.filter-panel[open] {
+  border-color: var(--rose);
+  box-shadow: 0 6px 18px rgba(168, 93, 118, 0.14);
+}
+
+/* little dropdowns: shelf picker + tag suggestions + dialogs ease in */
+@keyframes menu-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+.shelf-picker[open] .shelf-picker-list,
+.tag-suggestions.visible {
+  transform-origin: top left;
+  animation: menu-in 0.25s cubic-bezier(0.22, 0.7, 0.2, 1) both;
+}
+.shelf-picker-item { transition: background-color 0.15s ease, padding-left 0.2s ease; }
+.shelf-picker-item:hover { padding-left: 0.9rem; }
+.tag-chip { transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease; }
+.tag-chip:active { transform: scale(0.94); }
+
+@keyframes dialog-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+dialog[open] { animation: dialog-in 0.3s cubic-bezier(0.22, 0.7, 0.2, 1); }
+dialog[open]::backdrop { animation: backdrop-in 0.3s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  .shelf-picker[open] .shelf-picker-list,
+  .tag-suggestions.visible,
+  dialog[open],
+  dialog[open]::backdrop { animation: none; }
+}

@@ -1378,6 +1378,7 @@
   function setupAoTags(node, entry) {
     const details = node.querySelector('.ao-tags');
     const list = node.querySelector('.ao-tags-list');
+    makeSmoothDetails(details);
 
     const groups = [
       ['Fandom', entry.fandoms],
@@ -1901,6 +1902,70 @@
   }
   document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshFromCloud(); });
   window.addEventListener('pageshow', e => { if (e.persisted) refreshFromCloud(); });
+
+  // ---- Smooth accordion for <details> panels ----
+  // Native <details> snaps open/shut. This intercepts the summary click and
+  // animates the height (plus a soft staggered fade of the contents).
+  const SMOOTH_EASE = 'cubic-bezier(0.22, 0.7, 0.2, 1)';
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  function makeSmoothDetails(details) {
+    if (!details || details.dataset.smooth) return;
+    const summary = details.querySelector(':scope > summary');
+    if (!summary) return;
+    details.dataset.smooth = '1';
+    let anim = null;
+    let closing = false;
+
+    function finish(open) {
+      details.open = open;
+      details.classList.remove('is-closing');
+      details.style.height = '';
+      details.style.overflow = '';
+      anim = null;
+      closing = false;
+    }
+
+    function run(from, to, open) {
+      details.style.overflow = 'hidden';
+      anim = details.animate(
+        { height: [from + 'px', to + 'px'] },
+        { duration: open ? 420 : 300, easing: SMOOTH_EASE }
+      );
+      if (open) {
+        Array.from(details.children).forEach((child, i) => {
+          if (child === summary) return;
+          child.animate(
+            [{ opacity: 0, transform: 'translateY(-8px)' }, { opacity: 1, transform: 'none' }],
+            { duration: 380, delay: 40 + i * 40, easing: SMOOTH_EASE, fill: 'backwards' }
+          );
+        });
+      }
+      anim.onfinish = () => finish(open);
+      anim.oncancel = () => { anim = null; };
+    }
+
+    summary.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (reduceMotion.matches) { details.open = !details.open; return; }
+      const startH = details.offsetHeight;
+      if (anim) anim.cancel();
+      const wantOpen = anim ? closing : !details.open;
+      if (!wantOpen) {
+        closing = true;
+        details.classList.add('is-closing');
+        run(startH, summary.offsetHeight, false);
+      } else {
+        closing = false;
+        details.classList.remove('is-closing');
+        details.style.height = '';
+        details.open = true;
+        const endH = details.offsetHeight;
+        run(startH, endH, true);
+      }
+    });
+  }
+  makeSmoothDetails(document.getElementById('myTagsPanel'));
+  makeSmoothDetails(filterPanel);
 
   // ---- Init ----
   render(); // show the local cache immediately
