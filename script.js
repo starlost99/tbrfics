@@ -45,6 +45,10 @@
     }
   }
 
+  // Searchable text per card, built once and reused on every keystroke.
+  // Dropped whenever the data is saved, so edits are always picked up.
+  let haystackCache = new WeakMap();
+
   // ---- Cloud sync hooks (see sync.js) ----
   const DIRTY_KEY = 'tbr-stacks-dirty';
   const SYNC_USER_KEY = 'tbr-stacks-sync-user';
@@ -55,6 +59,7 @@
   }
 
   function saveEntries() {
+    haystackCache = new WeakMap();
     localStorage.setItem(STORE_KEY, JSON.stringify(entries));
     markDirty();
   }
@@ -530,10 +535,14 @@
     }
 
     if (!query) return true;
-    const haystack = [
-      entry.title, entry.authors, entry.summary, entry.notes,
-      ...(entry.tags || []), ...entryAoTags(entry),
-    ].join(' ').toLowerCase();
+    let haystack = haystackCache.get(entry);
+    if (haystack === undefined) {
+      haystack = [
+        entry.title, entry.authors, entry.summary, entry.notes,
+        ...(entry.tags || []), ...entryAoTags(entry),
+      ].join(' ').toLowerCase();
+      haystackCache.set(entry, haystack);
+    }
     return haystack.includes(query);
   }
 
@@ -1655,9 +1664,12 @@
   }
 
   // ---- Search & filter wiring ----
+  // Wait until you pause typing before re-drawing the list.
+  let searchTimer = null;
   searchInput.addEventListener('input', () => {
     pinnedId = null;
-    render();
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(render, 150);
   });
 
   sortSelect.addEventListener('change', () => {
@@ -1794,6 +1806,7 @@
 
   // ---- Cloud sync on startup ----
   function applyRemote(d) {
+    haystackCache = new WeakMap();
     entries = (d.entries || []).map(migrateShelfField);
     shelves = d.shelves || [];
     shelfColors = d.shelfColors || {};
