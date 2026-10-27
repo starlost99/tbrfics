@@ -284,7 +284,10 @@
 <script>
   (function () {
     const strip = document.getElementById('stringLights');
+    const mast = document.querySelector('.masthead');
     if (!strip) return;
+    let total = 0;
+    const updateLit = () => { if (mast && total) mast.style.setProperty('--lit', ((total - off.size) / total).toFixed(2)); };
     const NS = 'http://www.w3.org/2000/svg';
     const off = new Set();          // bulbs the person has switched off, by index
     let lastW = 0;
@@ -298,7 +301,7 @@
         return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
       };
     }
-    const wireY = x => 25 + 11 * Math.sin(x / 52 + 0.4) + 3 * Math.sin(x / 23 + 2);
+    const wireY = x => 20 + 8 * Math.sin(x / 52 + 0.4) + 2.5 * Math.sin(x / 23 + 2);
 
     function build() {
       const W = Math.round(strip.clientWidth);
@@ -318,12 +321,13 @@
       strip.appendChild(svg);
 
       const n = Math.max(6, Math.round(W / 80));
+      total = n;
       const gap = W / n;
       for (let i = 0; i < n; i++) {
         const x = Math.max(10, Math.min(W - 10, (i + 0.5) * gap + (rand() - 0.5) * gap * 0.75));
         const y = wireY(x);
-        const dia = 10 + Math.round(rand() * 4);
-        const stem = 1 + rand() * 7;
+        const dia = 7 + Math.round(rand() * 3);
+        const stem = 1 + rand() * 6;
         const up = rand() < 0.32;
         const cy = up ? y - stem - dia / 2 : y + stem + dia / 2;
 
@@ -344,9 +348,11 @@
           const isOff = b.classList.toggle('off');
           isOff ? off.add(i) : off.delete(i);
           b.setAttribute('aria-pressed', String(!isOff));
+          updateLit();
         });
         strip.appendChild(b);
       }
+      updateLit();
     }
     build();
     let t;
