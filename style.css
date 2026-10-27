@@ -2515,3 +2515,33 @@ html[data-glow="pink"] {               /* light mode, pink alternative */
   line-height: 1.15;
   overflow-wrap: anywhere;
 }
+
+/* ---- tower books carry their titles ---- */
+.tower-books {
+  min-height: 90px;
+  background-image: repeating-linear-gradient(to bottom, transparent 0 90px,
+      color-mix(in srgb, var(--gold) 70%, var(--ink)) 90px 97px);
+}
+.tower-book { height: 90px; }
+.tower-book-body {
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; color: var(--ink);
+}
+.tower-book-general  { color: var(--rating-general-fg); }
+.tower-book-teen     { color: var(--rating-teen-fg); }
+.tower-book-mature   { color: var(--rating-mature-fg); }
+.tower-book-explicit { color: var(--rating-explicit-fg); }
+.tower-book-notrated { color: var(--rating-none-fg); }
+.tower-book-label {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 8px;
+  line-height: 1.15;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.tower-book-label.wrap { white-space: normal; text-align: center; overflow-wrap: anywhere; }
+/* the little rating swatches in the legend are not books */
+.tower-legend-item i { color: inherit; }

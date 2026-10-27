@@ -715,6 +715,25 @@
     return Math.round(34 + t * 22);
   }
 
+  // Titles on the tower books: tiny vertical lettering. Height follows the title
+  // (long ones wrap onto up to 3 lines and, past that, end in an ellipsis — the full
+  // title is on tap / hover). Thickness still follows word count.
+  const towerMeasure = document.createElement('canvas').getContext('2d');
+  const TOWER_FONT = 8, TOWER_ROW_H = 90, TOWER_INNER = 76;
+  function towerBookFit(title, words) {
+    towerMeasure.font = `600 ${TOWER_FONT}px Fraunces, Georgia, serif`;
+    const w = Math.ceil(towerMeasure.measureText(title).width * 1.06) + 2;
+    const room = TOWER_INNER - 8;                         // slack so words can break
+    const lines = Math.min(3, Math.max(1, Math.ceil(w / room)));
+    let text = title;
+    if (w > lines * room) text = title.slice(0, Math.max(3, Math.floor(title.length * lines * room / w) - 1)).trim() + '…';
+    const h = lines === 1 ? Math.min(TOWER_ROW_H - 2, Math.max(40, w + 14)) : TOWER_ROW_H - 2;
+    const n = Number(words) || 0;
+    const t = n ? Math.min(1, Math.max(0, (Math.log10(n) - 3) / 3)) : 0.3;
+    const width = Math.round(Math.max(14 + t * 8, lines * 9.3 + 8));
+    return { text, lines, h, width };
+  }
+
   function buildTowerFloor(label, members, color, shelfKey) {
     const floor = document.createElement('section');
     floor.className = 'tower-floor';
@@ -748,8 +767,14 @@
       book.setAttribute('aria-label', entry.title || 'Untitled');
       const body = document.createElement('span');
       body.className = `tower-book-body tower-book-${ratingClass(rating)}`;
-      body.style.height = spineHeightForWords(entry.words) + 'px';
-      book.style.width = (15 + (hashString(entry.id || entry.title || '') % 4) * 3) + 'px';
+      const fit = towerBookFit(entry.title || 'Untitled', entry.words);
+      body.style.height = fit.h + 'px';
+      book.style.width = fit.width + 'px';
+      const lab = document.createElement('span');
+      lab.className = 'tower-book-label' + (fit.lines > 1 ? ' wrap' : '');
+      lab.textContent = fit.text;
+      if (fit.lines > 1) lab.style.maxHeight = (fit.h - 8) + 'px';
+      body.appendChild(lab);
       book.appendChild(body);
       book.addEventListener('click', () => openBookInfo(entry));
       books.appendChild(book);
@@ -987,7 +1012,7 @@
   }
 
   if (document.fonts && document.fonts.status !== 'loaded') {
-    document.fonts.ready.then(() => renderBookshelf());
+    document.fonts.ready.then(() => { renderBookshelf(); if (shelvesMode === 'tower') renderTower(); });
   }
 
   function renderShelfContents() {
