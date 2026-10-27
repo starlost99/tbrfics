@@ -1824,3 +1824,302 @@ dialog[open]::backdrop { animation: backdrop-in 0.3s ease; }
 }
 .stub-pin:hover { color: var(--rose-deep); border-color: var(--rose-deep); }
 .stub-pin.active { background: var(--rose-deep); border-color: var(--rose-deep); color: var(--surface); }
+
+/* =====================================================================
+   Catalog-drawer pass
+   One idea: the controls are the front of a card-catalog drawer.
+   - view tabs are folder index tabs
+   - search / tags / filters are ruled rows inside the drawer
+   - "Up next" is a card with a ribbon bookmark and a rubber-stamped count
+   - your own tags are hole-punched library tags
+   Corners stay small (cards use 3px); only the FAB / to-top stay round.
+   ===================================================================== */
+
+:root { --drawer-radius: 4px; }
+
+/* ---- the drawer ---- */
+.controls {
+  position: relative;
+  padding: 1.1rem 1.25rem 1.25rem;
+  margin-bottom: 1.75rem;
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  border-radius: 0 var(--drawer-radius) var(--drawer-radius) var(--drawer-radius);
+  box-shadow: 3px 3px 0 var(--rule);
+}
+
+/* ---- folder index tabs ---- */
+.toolbar-row { gap: 0.4rem; margin: 1.25rem 0 0; }
+.view-tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.3rem;
+  padding: 0 0 0 0.9rem;
+  margin: 0 0 -1.5px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  position: relative;
+  z-index: 2;
+}
+.view-tab {
+  position: relative;
+  border: 1.5px solid var(--ink);
+  border-radius: 9px 9px 0 0;
+  background: var(--rule);
+  color: var(--ink-soft);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.4rem 1.1rem 0.3rem;
+  margin-top: 0.3rem;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.view-tab:hover { color: var(--ink); }
+.view-tab.active {
+  background: var(--surface);
+  color: var(--ink);
+  padding-bottom: 0.45rem;
+  margin-top: 0;
+  border-bottom-color: var(--surface);          /* opens the tab into the drawer */
+  box-shadow: inset 0 3px 0 var(--rose);
+}
+
+/* ---- rows inside the drawer ---- */
+.quick-filter { gap: 0; margin: 0 0 0.9rem; }
+.quick-filter .tag-chip {
+  border: 1.5px solid var(--ink);
+  border-radius: 0;
+  color: var(--ink);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.4rem 1.05rem;
+  margin-left: -1.5px;
+}
+.quick-filter .tag-chip:first-child { border-radius: 3px 0 0 3px; margin-left: 0; }
+.quick-filter .tag-chip:last-child  { border-radius: 0 3px 3px 0; }
+.quick-filter .tag-chip.active {
+  background: var(--rose-deep);
+  color: var(--surface);
+  position: relative;
+  z-index: 1;
+}
+
+/* Your tags + Filters: no boxes of their own, just ruled rows with a + / − */
+.my-tags-panel,
+.filter-panel,
+.my-tags-panel[open],
+.filter-panel[open] {
+  margin-top: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+.my-tags-panel > summary,
+.filter-panel > summary {
+  padding: 0.7rem 0;
+  border-top: 1.5px dashed var(--rule);
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-style: italic;
+  font-weight: 500;
+  color: var(--ink);
+}
+.my-tags-panel > summary:hover,
+.filter-panel > summary:hover { color: var(--rose-deep); }
+
+.my-tags-panel > summary::after,
+.filter-panel > summary::after {
+  content: "+";
+  width: auto;
+  height: auto;
+  border: 0;
+  transform: none;
+  font-family: var(--font-display);
+  font-style: normal;
+  font-size: 1.4rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--rose-deep);
+  transition: none;
+}
+.my-tags-panel[open] > summary::after,
+.filter-panel[open] > summary::after { content: "\2212"; transform: none; }
+/* flips right away while the panel is still rolling shut */
+.my-tags-panel.is-closing > summary::after,
+.filter-panel.is-closing > summary::after { content: "+"; transform: none; }
+
+.my-tags-panel > .tag-rail { padding: 0 0 0.85rem; }
+.filter-body { padding: 0.1rem 0 0.9rem; }
+.filter-label {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 0.85rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--rose-deep);
+}
+
+/* search: a typed line on the card */
+.search-row {
+  margin-top: 0 !important;
+  padding-top: 0.85rem;
+  border-top: 1.5px dashed var(--rule);
+}
+#searchInput {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  border-bottom: 1.5px solid var(--ink);
+  border-radius: 0;
+  background-color: transparent;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23A85D76' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='8.5' cy='8.5' r='5.5'/%3E%3Cpath d='M13 13l4.5 4.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 0.1rem 50%;
+  background-size: 1.05rem;
+  padding: 0.55rem 0.2rem 0.55rem 1.8rem;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+}
+#searchInput::placeholder { font-style: italic; color: var(--ink-soft); opacity: 0.65; }
+#searchInput:focus-visible {
+  outline: none;
+  border-bottom-color: var(--rose-deep);
+  box-shadow: 0 1.5px 0 var(--rose-deep);
+}
+
+/* ---- chips: small rectangles, not pills ---- */
+.tag-chip {
+  border-radius: 3px;
+  padding: 0.3rem 0.6rem;
+}
+/* only YOUR tags get the hole-punch */
+.tag-rail .tag-chip { display: inline-flex; align-items: center; }
+.tag-rail .tag-chip::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 5px;
+  height: 5px;
+  margin-right: 0.45rem;
+  border: 1.25px solid currentColor;
+  border-radius: 50%;
+  opacity: 0.75;
+}
+
+.range-row input,
+#aoTagSearch,
+.sort-select { border-radius: 3px; }
+
+.filter-count,
+.up-next-count,
+.shelf-count,
+.spine-count { border-radius: 2px; }
+.filter-count { font-family: var(--font-display); }
+
+/* ---- Up next: a card with a ribbon bookmark ---- */
+.up-next {
+  position: relative;
+  margin: 0 0 1.75rem;
+  padding: 0.85rem 1rem 0.85rem 3.3rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 3px;
+  background: var(--surface);
+  box-shadow: 3px 3px 0 var(--rose);
+}
+.up-next::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: 1.15rem;
+  width: 22px;
+  height: 46px;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,0.22) 0 28%, transparent 28%),
+    var(--rose-deep);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 76%, 0 100%);
+  pointer-events: none;
+}
+.up-next-head h2::before { content: none; }
+.up-next-head h2 { font-size: 1.35rem; }
+.up-next-head::after {
+  content: "+";
+  width: auto;
+  height: auto;
+  border: 0;
+  transform: none;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--rose-deep);
+  transition: none;
+}
+.up-next-collapse[open] > .up-next-head::after { content: "\2212"; transform: none; }
+
+/* the count is a rubber stamp */
+.up-next-count {
+  background: none;
+  color: var(--rose-deep);
+  border: 3px double var(--rose-deep);
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 0 0.4rem;
+  transform: rotate(-3deg);
+}
+
+/* ---- small things on the cards ---- */
+.badge,
+.pill,
+.pill-ao,
+.stub-pin { border-radius: 2px; }
+.stub-pin { padding: 0.25rem 0.5rem; }
+.shelf-count { background: none; color: var(--rose-deep); border: 1px solid var(--rose-deep); }
+.toast { border-radius: 4px; }
+
+/* ---- shelves + library: same small corners ---- */
+.controls-collapse.shelves-mode {
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+.controls-collapse.shelves-mode > .controls-summary {
+  padding: 0.1rem 0;
+  list-style: none;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-style: italic;
+  font-weight: 500;
+}
+.controls-collapse.shelves-mode > .controls-summary::-webkit-details-marker { display: none; }
+.controls-collapse.shelves-mode > .controls-summary::after {
+  content: "+";
+  margin-left: auto;
+  font-style: normal;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--rose-deep);
+}
+.controls-collapse.shelves-mode[open] > .controls-summary::after { content: "\2212"; }
+.controls-collapse.shelves-mode > .controls-collapse-body { padding: 0.6rem 0 0; }
+
+.book-cover { border-radius: 3px 10px 10px 3px; }
+.shelf-row-wrap,
+.shelf-row-list .shelf-row-wrap:first-child { border-radius: 4px; }
+.shelf-row-thumb { border-radius: 3px; }
+.shelf-hint { border-radius: 4px; }
+.bookshelf-wrap { border-radius: 6px 6px 4px 4px; }
+
+@media (prefers-color-scheme: dark) {
+  #searchInput {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23E8A5BB' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='8.5' cy='8.5' r='5.5'/%3E%3Cpath d='M13 13l4.5 4.5'/%3E%3C/svg%3E");
+  }
+}
+
+@media (max-width: 520px) {
+  .controls { padding: 1rem 1rem 1.1rem; }
+  .view-tab { padding: 0.4rem 0.9rem 0.3rem; font-size: 0.9rem; }
+}
