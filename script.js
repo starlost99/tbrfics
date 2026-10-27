@@ -1854,9 +1854,36 @@
     }
   }
 
+  // ---- Pull fresh data when you come back to the app ----
+  let lastResumePull = 0;
+  async function refreshFromCloud() {
+    const cloud = window.StacksCloud;
+    if (!cloud || !cloud.enabled || !cloud.signedIn() || cloud.busy()) return;
+    if (localStorage.getItem(DIRTY_KEY) === '1') return;            // unsynced edits: never overwrite
+    const a = document.activeElement;
+    if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;     // don't disturb typing
+    if (document.querySelector('dialog[open]')) return;
+    if (Date.now() - lastResumePull < 10000) return;                 // at most every 10s
+    lastResumePull = Date.now();
+    try {
+      const remote = await cloud.pull();
+      if (!remote) return;
+      if (cloud.busy() || localStorage.getItem(DIRTY_KEY) === '1') return; // edited while fetching
+      if (JSON.stringify(remote) === JSON.stringify(snapshot())) return;   // nothing new
+      applyRemote(remote);
+      render();
+      if (view === 'shelves') { renderBookshelf(); renderShelfContents(); }
+      if (view === 'library') renderLibrary();
+      showToast('Updated from your account');
+    } catch (e) { /* offline: keep what's on screen */ }
+  }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshFromCloud(); });
+  window.addEventListener('pageshow', e => { if (e.persisted) refreshFromCloud(); });
+
   // ---- Init ----
   render(); // show the local cache immediately
   syncOnStart().finally(() => {
+    lastResumePull = Date.now();
     ingestFromURL(); // after sync, so a new card lands on top of your cloud data
     render();
     if (view === 'shelves') { renderBookshelf(); renderShelfContents(); }

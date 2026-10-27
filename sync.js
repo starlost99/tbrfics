@@ -5,7 +5,7 @@
   const $ = id => document.getElementById(id);
   const accountBtn = $('accountBtn');
   const dlg = $('authDialog');
-  let client = null, user = null, timer = null, pushing = false, pendingSnap = null;
+  let client = null, user = null, timer = null, pushing = false, pending = false, pendingSnap = null;
 
   function setStatus(s) {
     accountBtn.classList.toggle('signed-in', s === 'ok');
@@ -35,8 +35,10 @@
   function queuePush(getSnap) {
     if (!user) return;
     pendingSnap = getSnap;
+    pending = true;
     clearTimeout(timer);
     timer = setTimeout(async () => {
+      pending = false;
       if (pushing) return queuePush(getSnap);
       pushing = true;
       try { await pushNow(pendingSnap); } catch (e) { /* stays dirty; retried on next change */ }
@@ -96,5 +98,9 @@
 
   if (enabled) client = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseKey);
 
-  window.StacksCloud = { enabled, start, pull, pushNow, queuePush, setStatus };
+  window.StacksCloud = {
+    enabled, start, pull, pushNow, queuePush, setStatus,
+    signedIn: () => !!user,
+    busy: () => pending || pushing,
+  };
 })();
