@@ -2120,54 +2120,97 @@ dialog[open]::backdrop { animation: backdrop-in 0.3s ease; }
 }
 
 /* =====================================================================
-   Tower (step 1) — Booktower-style stacked shelves, alongside the rail
+   Tower — a literal tower: roof, one floor per shelf, door at the base
    ===================================================================== */
 .shelves-mode-switch { display: flex; gap: 0.4rem; margin: 0 0 1rem; }
 .mode-btn { font-size: 0.8rem; padding: 0.3rem 0.9rem; }
 .mode-btn.active { background: var(--rose-deep); color: var(--surface); border-color: var(--rose-deep); }
 
 .tower {
-  display: flex; flex-direction: column; gap: 0.25rem;
-  max-width: 34rem; margin: 0 auto;
-  padding: 1rem 0.9rem 0.5rem;
-  background: var(--surface);
-  border: 1.5px solid var(--ink);
-  border-radius: 18px 18px 6px 6px;
-  box-shadow: 3px 3px 0 var(--rule);
+  --stone: color-mix(in srgb, var(--rose) 28%, var(--rule));
+  --stone-dark: color-mix(in srgb, var(--rose-deep) 55%, var(--ink));
+  width: min(22rem, 100%); margin: 1.5rem auto 0;
+  display: flex; flex-direction: column; align-items: stretch;
 }
-.tower-shelf-head { display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.2rem; }
-.tower-shelf-name {
-  font-family: var(--font-display); font-weight: 600; font-size: 0.95rem; color: var(--ink);
-  border-left: 4px solid var(--shelf-color, var(--rule)); padding-left: 0.45rem;
+/* roof */
+.tower-roof { display: flex; flex-direction: column; align-items: center; }
+.tower-roof-cone {
+  width: 78%; height: 5.5rem; background: var(--rose-deep);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  background-image: radial-gradient(circle at 50% 40%, rgba(255,255,255,.18) 0 6px, transparent 7px),
+                    radial-gradient(circle at 36% 72%, rgba(255,255,255,.14) 0 6px, transparent 7px),
+                    radial-gradient(circle at 64% 72%, rgba(255,255,255,.14) 0 6px, transparent 7px);
 }
-.tower-shelf-count { font-size: 0.7rem; color: var(--ink-soft); }
+.tower-roof-brim {
+  width: 92%; height: 0.8rem; background: var(--stone); border: 1.5px solid var(--ink);
+  border-radius: 3px;
+}
+/* a floor = stone wall with a lit room inside */
+.tower-floor {
+  padding: 0.7rem; background: var(--stone);
+  border: 1.5px solid var(--ink); border-top: 0; margin: 0 4%;
+  background-image: repeating-linear-gradient(to bottom, transparent 0 17px, rgba(0,0,0,.07) 17px 18px);
+}
+.tower-room {
+  position: relative; min-height: 9rem; padding: 0.55rem 0.6rem 0.5rem;
+  background: linear-gradient(180deg,
+      color-mix(in srgb, var(--shelf-color, var(--rose)) 38%, var(--surface)),
+      color-mix(in srgb, var(--shelf-color, var(--rose)) 18%, var(--surface)));
+  border: 2px solid var(--stone-dark); border-radius: 4px;
+  display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+}
+.tower-room-empty { justify-content: center; }
+.tower-plate {
+  align-self: stretch; display: flex; flex-direction: column; line-height: 1.15;
+  padding: 0.25rem 0.5rem; background: color-mix(in srgb, var(--ink) 72%, transparent);
+  border-radius: 3px; color: var(--surface);
+}
+.tower-plate-name { font-family: var(--font-display); font-weight: 600; font-size: 0.95rem; }
+.tower-plate-count { font-size: 0.65rem; opacity: .85; }
+/* the bookcase */
+.tower-case {
+  width: 74%; padding: 6px 6px 0; background: color-mix(in srgb, var(--gold) 55%, var(--ink));
+  border: 2px solid var(--stone-dark); border-radius: 3px 3px 0 0;
+}
 .tower-books {
-  display: flex; align-items: flex-end; gap: 2px; flex-wrap: wrap;
-  min-height: 2.5rem; padding: 0 0.2rem;
+  display: flex; flex-wrap: wrap; align-content: flex-start; column-gap: 2px; row-gap: 7px;
+  min-height: 56px; max-height: 12.6rem; overflow-y: auto;
+  background-image: repeating-linear-gradient(to bottom, transparent 0 56px,
+      color-mix(in srgb, var(--gold) 70%, var(--ink)) 56px 63px);
+  background-color: color-mix(in srgb, var(--ink) 55%, transparent);
 }
-.tower-empty { font-size: 0.75rem; font-style: italic; color: var(--ink-soft); padding: 0.6rem 0; }
 .tower-book {
-  width: var(--book-w, 18px); height: var(--book-h, 70px);
-  padding: 0; border: 1px solid var(--ink); border-bottom: 0;
-  border-radius: 3px 3px 0 0; cursor: pointer; overflow: hidden;
-  background: var(--rating-none-bg); color: var(--ink);
-  transition: transform 0.15s ease;
+  height: 56px; padding: 0; border: 0; background: none; cursor: pointer;
+  display: flex; align-items: flex-end; transition: transform .15s ease;
 }
-.tower-book:hover, .tower-book:focus-visible { transform: translateY(-4px); outline: none; }
-.tower-book-title {
-  display: block; writing-mode: vertical-rl; font-size: 0.6rem; font-weight: 600;
-  line-height: var(--book-w, 18px); height: 100%; padding: 4px 0;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+.tower-book:hover, .tower-book:focus-visible { transform: translateY(-3px); outline: none; }
+.tower-book-body {
+  display: block; width: 100%; border: 1px solid var(--ink); border-bottom: 0;
+  border-radius: 2px 2px 0 0; background: var(--rating-none-bg);
 }
 .tower-book-general  { background: var(--rating-general-bg); }
 .tower-book-teen     { background: var(--rating-teen-bg); }
 .tower-book-mature   { background: var(--rating-mature-bg); }
 .tower-book-explicit { background: var(--rating-explicit-bg); }
 .tower-book-notrated { background: var(--rating-none-bg); }
-.tower-plank { height: 8px; background: var(--rose-deep); border-radius: 2px; margin-bottom: 0.7rem; }
+.tower-add { font-size: 0.85rem; padding: 0.5rem 1rem; }
+/* ground */
+.tower-base {
+  position: relative; height: 9rem; margin: 0 2%; background: var(--stone);
+  border: 1.5px solid var(--ink); border-top: 0; display: flex; justify-content: center; align-items: flex-end;
+  background-image: repeating-linear-gradient(to bottom, transparent 0 17px, rgba(0,0,0,.07) 17px 18px);
+}
+.tower-door {
+  width: 4.2rem; height: 6.6rem; border: 3px solid var(--stone-dark); border-bottom: 0;
+  border-radius: 999px 999px 0 0;
+  background: linear-gradient(90deg, transparent 49%, var(--stone-dark) 49% 51%, transparent 51%), var(--gold);
+}
+.tower-grass {
+  height: 0.9rem; margin: 0 -4%; background: #6E9B6E; border: 1.5px solid var(--ink); border-radius: 0 0 14px 14px;
+}
 .tower-legend {
   display: flex; flex-wrap: wrap; justify-content: center; gap: 0.3rem 0.9rem;
-  margin: 0.8rem 0 0; font-size: 0.72rem; color: var(--ink-soft);
+  margin: 1rem 0 0; font-size: 0.72rem; color: var(--ink-soft);
 }
 .tower-legend-item i {
   display: inline-block; width: 10px; height: 10px; margin-right: 0.3rem;

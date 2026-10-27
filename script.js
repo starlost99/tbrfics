@@ -708,58 +708,55 @@
 
   function spineHeightForWords(words) {
     const w = Number(words) || 0;
-    if (!w) return 70;
-    // ~50px for a short one-shot up to ~110px for a doorstop, log-scaled
+    if (!w) return 40;
+    // 34px for a short one-shot up to 56px for a doorstop, log-scaled
     const t = Math.min(1, Math.max(0, (Math.log10(w) - 3) / 3));
-    return Math.round(50 + t * 60);
+    return Math.round(34 + t * 22);
   }
 
-  function buildTowerShelf(label, members, color) {
-    const row = document.createElement('section');
-    row.className = 'tower-shelf';
+  function buildTowerFloor(label, members, color) {
+    const floor = document.createElement('section');
+    floor.className = 'tower-floor';
+    if (color) floor.style.setProperty('--shelf-color', color);
 
-    const head = document.createElement('div');
-    head.className = 'tower-shelf-head';
+    const room = document.createElement('div');
+    room.className = 'tower-room';
+
+    const plate = document.createElement('div');
+    plate.className = 'tower-plate';
     const name = document.createElement('span');
-    name.className = 'tower-shelf-name';
+    name.className = 'tower-plate-name';
     name.textContent = label;
-    if (color) name.style.setProperty('--shelf-color', color);
     const count = document.createElement('span');
-    count.className = 'tower-shelf-count';
-    count.textContent = String(members.length);
-    head.appendChild(name);
-    head.appendChild(count);
-    row.appendChild(head);
+    count.className = 'tower-plate-count';
+    count.textContent = `${members.length} book${members.length === 1 ? '' : 's'}`;
+    plate.appendChild(name);
+    plate.appendChild(count);
+    room.appendChild(plate);
 
+    const caseEl = document.createElement('div');
+    caseEl.className = 'tower-case';
     const books = document.createElement('div');
     books.className = 'tower-books';
-    if (members.length === 0) {
-      const empty = document.createElement('span');
-      empty.className = 'tower-empty';
-      empty.textContent = 'empty shelf';
-      books.appendChild(empty);
-    }
     members.forEach(entry => {
       const rating = (entry.rating && entry.rating[0]) || '';
       const book = document.createElement('button');
       book.type = 'button';
-      book.className = `tower-book tower-book-${ratingClass(rating)}`;
-      book.style.setProperty('--book-h', spineHeightForWords(entry.words) + 'px');
-      book.style.setProperty('--book-w', (16 + (hashString(entry.id || entry.title || '') % 4) * 3) + 'px');
+      book.className = 'tower-book';
       book.title = entry.title || 'Untitled';
       book.setAttribute('aria-label', entry.title || 'Untitled');
-      const t = document.createElement('span');
-      t.className = 'tower-book-title';
-      t.textContent = entry.title || 'Untitled';
-      book.appendChild(t);
+      const body = document.createElement('span');
+      body.className = `tower-book-body tower-book-${ratingClass(rating)}`;
+      body.style.height = spineHeightForWords(entry.words) + 'px';
+      book.style.width = (15 + (hashString(entry.id || entry.title || '') % 4) * 3) + 'px';
+      book.appendChild(body);
       book.addEventListener('click', () => openBookInfo(entry));
       books.appendChild(book);
     });
-    row.appendChild(books);
-    const plank = document.createElement('div');
-    plank.className = 'tower-plank';
-    row.appendChild(plank);
-    return row;
+    caseEl.appendChild(books);
+    room.appendChild(caseEl);
+    floor.appendChild(room);
+    return floor;
   }
 
   function renderTower() {
@@ -772,14 +769,41 @@
     const query = searchInput.value.trim().toLowerCase();
     const shown = sortEntries(entries.filter(e => matchesFilters(e, query)));
 
+    const roof = document.createElement('div');
+    roof.className = 'tower-roof';
+    roof.innerHTML = '<div class="tower-roof-cone"></div><div class="tower-roof-brim"></div>';
+    tower.appendChild(roof);
+
     shelves.forEach(name => {
       const members = shown.filter(e => entryShelves(e).includes(name));
-      tower.appendChild(buildTowerShelf(name, members, spineColorForShelf(name)));
+      tower.appendChild(buildTowerFloor(name, members, spineColorForShelf(name)));
     });
+
+    // Empty floor with the "add a shelf" button, like the spine's "+" in the rail
+    const addFloor = document.createElement('section');
+    addFloor.className = 'tower-floor';
+    const addRoom = document.createElement('div');
+    addRoom.className = 'tower-room tower-room-empty';
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'btn-solid tower-add';
+    addBtn.textContent = '+ Add shelf';
+    addBtn.addEventListener('click', () => addShelf());
+    addRoom.appendChild(addBtn);
+    addFloor.appendChild(addRoom);
+    tower.appendChild(addFloor);
+
+    // Ground floor: books without a shelf (the rail's "unshelved" spine)
     const loose = shown.filter(e => entryShelves(e).length === 0);
-    if (loose.length || shelves.length === 0) {
-      tower.appendChild(buildTowerShelf('Unshelved', loose, null));
-    }
+    tower.appendChild(buildTowerFloor('Unshelved', loose, null));
+
+    const base = document.createElement('div');
+    base.className = 'tower-base';
+    base.innerHTML = '<div class="tower-door"></div>';
+    tower.appendChild(base);
+    const grass = document.createElement('div');
+    grass.className = 'tower-grass';
+    tower.appendChild(grass);
 
     TOWER_RATINGS.forEach(([key, label]) => {
       const item = document.createElement('span');
