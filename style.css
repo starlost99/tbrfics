@@ -1781,8 +1781,10 @@ dialog[open]::backdrop { animation: backdrop-in 0.3s ease; }
 .up-next-head h2 {
   margin: 0;
   font-family: var(--font-display);
-  font-style: italic;
-  font-size: 1.3rem;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 1.4rem;
+  line-height: 0.95;
   color: var(--ink);
 }
 .up-next-head h2::before { content: "✦ "; color: var(--rose); font-style: normal; }
