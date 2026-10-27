@@ -98,7 +98,9 @@ body {
   padding: 2.5rem 1.5rem 1.25rem;
   border-bottom: 2px solid var(--ink);
   max-width: 1100px;
-  margin: 0 auto;
+  margin: 0 auto 2.4rem;
+  position: relative;
+  --glow: var(--rose);
 }
 
 .eyebrow {
@@ -2279,3 +2281,94 @@ dialog[open]::backdrop { animation: backdrop-in 0.3s ease; }
   line-height: 1.2;
 }
 .controls-collapse.shelves-mode[open] > .controls-collapse-body { padding-top: 0.9rem; }
+
+
+/* ---- string lights on the masthead divider ---- */
+.string-lights {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 2px);
+  display: flex;
+  height: 30px;
+  pointer-events: none;
+}
+.light-cell {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+}
+.light-cell::before {            /* the sagging wire between two clamps */
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 9px;
+  border-bottom: 1.5px solid var(--ink-soft);
+  border-radius: 0 0 50% 50% / 0 0 100% 100%;
+}
+.bulb {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  width: 12px;
+  height: 17px;
+  margin-left: -6px;
+  padding: 0;
+  border: 0;
+  border-radius: 50% 50% 50% 50% / 58% 58% 42% 42%;
+  background: color-mix(in srgb, var(--c) 32%, var(--surface));
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / .08);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background .3s ease, box-shadow .3s ease, transform .3s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.bulb::before {                  /* the socket */
+  content: "";
+  position: absolute;
+  left: 50%; top: -4px;
+  width: 6px; height: 5px;
+  margin-left: -3px;
+  border-radius: 1.5px;
+  background: var(--ink-soft);
+}
+.bulb::after {                   /* tap target, bigger than the bulb */
+  content: "";
+  position: absolute;
+  inset: -8px -8px -6px;
+}
+.bulb:focus-visible { outline: 2px solid var(--rose-deep); outline-offset: 4px; }
+.bulb.on, .bulb.hot {
+  background: var(--c);
+  transform: translateY(1px);
+  box-shadow:
+    0 0 6px 2px var(--c),
+    0 0 16px 6px color-mix(in srgb, var(--c) 55%, transparent);
+}
+.bulb.on { animation: bulb-warm .45s ease-out; }
+@keyframes bulb-warm {
+  0%   { filter: brightness(.6); }
+  35%  { filter: brightness(1.5); }
+  55%  { filter: brightness(.85); }
+  100% { filter: brightness(1); }
+}
+
+/* the text above picks up the light */
+.masthead .tagline,
+.masthead h1,
+.masthead .eyebrow {
+  transition: text-shadow .4s ease, color .4s ease;
+}
+.masthead.lit .tagline {
+  color: var(--ink);
+  text-shadow: 0 0 6px var(--glow), 0 0 16px var(--glow), 0 0 28px var(--glow);
+}
+.masthead.lit h1,
+.masthead.lit .eyebrow {
+  text-shadow: 0 0 10px var(--glow), 0 0 24px color-mix(in srgb, var(--glow) 60%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bulb, .masthead .tagline, .masthead h1, .masthead .eyebrow { transition: none; }
+  .bulb.on { animation: none; }
+}

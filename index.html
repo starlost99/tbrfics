@@ -42,6 +42,7 @@
     <p class="tagline">a catalog of fics you've meant to get to</p>
   </div>
   <div class="masthead-count" id="entryCount">0 cards on file</div>
+  <div class="string-lights" id="stringLights" role="group" aria-label="String lights"></div>
 </header>
 
 <main>
@@ -280,6 +281,54 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
 <script src="sync.js"></script>
 <script src="script.js"></script>
+<script>
+  (function () {
+    const mast = document.querySelector('.masthead');
+    const strip = document.getElementById('stringLights');
+    if (!mast || !strip) return;
+    const colors = ['--rose', '--rose-deep', '#C99A4B', '#F2C4D2'];
+    let count = 0;
+    const colorOf = i => { const c = colors[i % colors.length]; return c[0] === '-' ? `var(${c})` : c; };
+    const refresh = () => mast.classList.toggle('lit', !!strip.querySelector('.on, .hot'));
+    const glowFrom = b => mast.style.setProperty('--glow', b.style.getPropertyValue('--c'));
+    function build() {
+      const n = Math.max(6, Math.min(16, Math.round(strip.clientWidth / 64)));
+      if (n === count) return;
+      count = n;
+      strip.innerHTML = '';
+      for (let i = 0; i < n; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'light-cell';
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'bulb';
+        b.style.setProperty('--c', colorOf(i));
+        b.setAttribute('aria-label', 'Light ' + (i + 1));
+        b.setAttribute('aria-pressed', 'false');
+        b.addEventListener('pointerenter', e => {
+          if (e.pointerType !== 'mouse') return;
+          b.classList.add('hot'); glowFrom(b); refresh();
+        });
+        b.addEventListener('pointerleave', e => {
+          if (e.pointerType !== 'mouse') return;
+          b.classList.remove('hot'); refresh();
+        });
+        b.addEventListener('click', () => {
+          const on = b.classList.toggle('on');
+          b.setAttribute('aria-pressed', on);
+          if (on) glowFrom(b);
+          refresh();
+        });
+        cell.appendChild(b);
+        strip.appendChild(cell);
+      }
+      refresh();
+    }
+    build();
+    let t;
+    window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(build, 150); });
+  })();
+</script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
