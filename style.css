@@ -2283,92 +2283,89 @@ dialog[open]::backdrop { animation: backdrop-in 0.3s ease; }
 .controls-collapse.shelves-mode[open] > .controls-collapse-body { padding-top: 0.9rem; }
 
 
-/* ---- string lights on the masthead divider ---- */
+/* ---- string lights on the masthead divider ----
+   A wavy mauve wire with small peach-orange bulbs dangling (or perched) at
+   uneven heights, each wrapped in a soft glow. The wire and stems are drawn
+   as SVG by the script in index.html; the bulbs are real buttons so a tap
+   can switch one off and on again. */
+:root {
+  --wire: #C98CB2;
+  --bulb-rgb: 244, 144, 108;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --wire: #D6A0C2; }
+}
 .string-lights {
   position: absolute;
   left: 0;
   right: 0;
   top: calc(100% + 2px);
-  display: flex;
-  height: 30px;
+  height: 56px;
+  pointer-events: none;
+  overflow: visible;
+}
+.lights-wire {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
   pointer-events: none;
 }
-.light-cell {
-  flex: 1;
-  position: relative;
-  min-width: 0;
+.lights-wire path {
+  fill: none;
+  stroke: var(--wire);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
-.light-cell::before {            /* the sagging wire between two clamps */
-  content: "";
-  position: absolute;
-  left: 0; right: 0; top: 0;
-  height: 9px;
-  border-bottom: 1.5px solid var(--ink-soft);
-  border-radius: 0 0 50% 50% / 0 0 100% 100%;
+.lights-wire line {
+  stroke: rgb(var(--bulb-rgb));
+  stroke-opacity: .75;
+  stroke-width: 1.6;
+  stroke-linecap: round;
 }
 .bulb {
+  --d: 12px;
   position: absolute;
-  left: 50%;
-  top: 8px;
-  width: 12px;
-  height: 17px;
-  margin-left: -6px;
+  width: var(--d);
+  height: var(--d);
+  margin: calc(var(--d) / -2) 0 0 calc(var(--d) / -2);
   padding: 0;
   border: 0;
-  border-radius: 50% 50% 50% 50% / 58% 58% 42% 42%;
-  background: color-mix(in srgb, var(--c) 32%, var(--surface));
-  box-shadow: inset 0 -2px 0 rgb(0 0 0 / .08);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%,
+    #FFE9DD 0 18%, #FDBFA4 40%, #F6956F 78%, #EC8460 100%);
+  box-shadow:
+    0 0 0 1px rgba(var(--bulb-rgb), .55),
+    0 0 5px 1px rgba(var(--bulb-rgb), .85),
+    0 0 14px 5px rgba(var(--bulb-rgb), .38);
   cursor: pointer;
   pointer-events: auto;
-  transition: background .3s ease, box-shadow .3s ease, transform .3s ease;
+  transition: background .35s ease, box-shadow .35s ease;
   -webkit-tap-highlight-color: transparent;
 }
-.bulb::before {                  /* the socket */
+.bulb::before {                  /* wide, faint halo */
   content: "";
   position: absolute;
-  left: 50%; top: -4px;
-  width: 6px; height: 5px;
-  margin-left: -3px;
-  border-radius: 1.5px;
-  background: var(--ink-soft);
+  inset: -22px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(var(--bulb-rgb), .26) 0%, rgba(var(--bulb-rgb), .10) 45%, transparent 72%);
+  pointer-events: none;
+  transition: opacity .35s ease;
 }
 .bulb::after {                   /* tap target, bigger than the bulb */
   content: "";
   position: absolute;
-  inset: -8px -8px -6px;
+  inset: -7px;
 }
-.bulb:focus-visible { outline: 2px solid var(--rose-deep); outline-offset: 4px; }
-.bulb.on, .bulb.hot {
-  background: var(--c);
-  transform: translateY(1px);
-  box-shadow:
-    0 0 6px 2px var(--c),
-    0 0 16px 6px color-mix(in srgb, var(--c) 55%, transparent);
+.bulb:focus-visible { outline: 2px solid var(--rose-deep); outline-offset: 5px; }
+.bulb.off {
+  background: color-mix(in srgb, var(--rose) 28%, var(--surface));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--rose) 45%, transparent);
 }
-.bulb.on { animation: bulb-warm .45s ease-out; }
-@keyframes bulb-warm {
-  0%   { filter: brightness(.6); }
-  35%  { filter: brightness(1.5); }
-  55%  { filter: brightness(.85); }
-  100% { filter: brightness(1); }
-}
-
-/* the text above picks up the light */
-.masthead .tagline,
-.masthead h1,
-.masthead .eyebrow {
-  transition: text-shadow .4s ease, color .4s ease;
-}
-.masthead.lit .tagline {
-  color: var(--ink);
-  text-shadow: 0 0 6px var(--glow), 0 0 16px var(--glow), 0 0 28px var(--glow);
-}
-.masthead.lit h1,
-.masthead.lit .eyebrow {
-  text-shadow: 0 0 10px var(--glow), 0 0 24px color-mix(in srgb, var(--glow) 60%, transparent);
-}
+.bulb.off::before { opacity: 0; }
 
 @media (prefers-reduced-motion: reduce) {
-  .bulb, .masthead .tagline, .masthead h1, .masthead .eyebrow { transition: none; }
-  .bulb.on { animation: none; }
+  .bulb, .bulb::before { transition: none; }
 }
