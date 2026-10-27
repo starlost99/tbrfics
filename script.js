@@ -892,6 +892,18 @@
     stage.className = 'tshelf-stage';
     stage.style.setProperty('--shelf-color', isLoose ? 'var(--rose)' : spineColorForShelf(towerShelf));
 
+    // The wall behind the bookcase. Its look comes from CSS variables
+    // (--wall-color / --wall-pattern / --wall-image), and .tshelf-wall-tools is the
+    // spot reserved for the background customisation controls.
+    const wall = document.createElement('div');
+    wall.className = 'tshelf-wall';
+    wall.setAttribute('aria-hidden', 'true');
+    const wallTools = document.createElement('div');
+    wallTools.className = 'tshelf-wall-tools';
+    wallTools.hidden = true;
+    const bookcase = document.createElement('div');
+    bookcase.className = 'tshelf-bookcase';
+
     const cornice = document.createElement('div');
     cornice.className = 'tshelf-cornice';
     const bodyEl = document.createElement('div');
@@ -911,12 +923,15 @@
     members.forEach(entry => {
       const slot = document.createElement('div');
       slot.className = 'tshelf-slot';
-      slot.appendChild(buildBookCover(entry));
+      slot.appendChild(buildBookCover(entry, true));
       bodyEl.appendChild(slot);
     });
 
-    stage.appendChild(cornice);
-    stage.appendChild(bodyEl);
+    bookcase.appendChild(cornice);
+    bookcase.appendChild(bodyEl);
+    stage.appendChild(wall);
+    stage.appendChild(wallTools);
+    stage.appendChild(bookcase);
     host.appendChild(stage);
   }
 
@@ -1920,18 +1935,27 @@
   // shared across views, just collapsed by default here (see the view-tab
   // handler below), same as Shelves.
 
-  function buildBookCover(entry) {
+  // Cloth-bound cover colours for the shelf close-up: muted, in the app's rose/mauve/gold family.
+  const CLOTH_COLORS = ['#A85D76', '#C97B92', '#8C5E83', '#7A5A73', '#B07A5E', '#9B87C4', '#B98748', '#B5707A'];
+  const SHORT_RATING = { general: 'General', teen: 'Teen', mature: 'Mature', explicit: 'Explicit', notrated: 'Not rated' };
+
+  function buildBookCover(entry, cloth) {
     const cover = document.createElement('button');
     cover.type = 'button';
-    cover.className = 'book-cover';
-    cover.style.backgroundImage = coverGradientFor(entry);
+    cover.className = 'book-cover' + (cloth ? ' book-cover-cloth' : '');
+    if (cloth) {
+      cover.style.setProperty('--cloth', CLOTH_COLORS[hashString(entry.title || entry.id || '') % CLOTH_COLORS.length]);
+      cover.title = entry.title || 'Untitled';
+    } else {
+      cover.style.backgroundImage = coverGradientFor(entry);
+    }
     cover.addEventListener('click', () => openBookInfo(entry));
 
     const rating = entry.rating && entry.rating[0];
     if (rating) {
       const badge = document.createElement('span');
       badge.className = `book-rating badge badge-rating-${ratingClass(rating)}`;
-      badge.textContent = rating;
+      badge.textContent = cloth ? SHORT_RATING[ratingClass(rating)] : rating;
       cover.appendChild(badge);
     }
 
@@ -1953,7 +1977,7 @@
     meta.className = 'book-meta';
     const metaBits = [];
     if (entry.words) metaBits.push(formatWords(entry.words));
-    const readTimeText = formatReadTime(entry.words);
+    const readTimeText = cloth ? '' : formatReadTime(entry.words);   // read time lives on the full card
     if (readTimeText) metaBits.push(readTimeText);
     if (entry.stars) metaBits.push('★'.repeat(Math.round(entry.stars)));
     meta.textContent = metaBits.join(' · ');

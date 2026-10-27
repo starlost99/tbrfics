@@ -2545,3 +2545,105 @@ html[data-glow="pink"] {               /* light mode, pink alternative */
 .tower-book-label.wrap { white-space: normal; text-align: center; overflow-wrap: anywhere; }
 /* the little rating swatches in the legend are not books */
 .tower-legend-item i { color: inherit; }
+
+/* =====================================================================
+   Shelf close-up, reworked: a roomy wall with a blush bookcase and
+   cloth-bound covers (same family as the rail spines)
+   ===================================================================== */
+.tshelf-stage {
+  --wall-color: color-mix(in srgb, var(--shelf-color) 16%, var(--bg));
+  --wall-pattern: repeating-linear-gradient(to bottom, transparent 0 2.1rem,
+      color-mix(in srgb, var(--rule) 70%, transparent) 2.1rem calc(2.1rem + 1px));
+  --wall-image: none;
+  position: relative;
+  padding: clamp(1.25rem, 5vw, 2.75rem) clamp(1rem, 5vw, 3rem) clamp(1.5rem, 5vw, 3rem);
+  background: none;
+  overflow: hidden;
+  border-radius: 22px;
+}
+.tshelf-wall {
+  position: absolute; inset: 0; z-index: 0;
+  background: var(--wall-image), var(--wall-pattern), var(--wall-color);
+  background-size: cover, auto, auto;
+  background-position: center;
+}
+.tshelf-wall-tools {            /* reserved for background options (colour, pattern, image…) */
+  position: relative; z-index: 2;
+  display: flex; justify-content: flex-end; gap: 0.5rem;
+  margin: 0 0 1rem;
+}
+.tshelf-wall-tools[hidden] { display: none; }
+.tshelf-bookcase { position: relative; z-index: 1; }
+
+.tshelf-cornice {
+  height: 1rem; margin: 0 -0.35rem;
+  background: linear-gradient(180deg, var(--plank-1), var(--plank-2) 60%, var(--plank-3));
+  border: 0; border-radius: 6px 6px 0 0;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.2), 0 4px 8px rgba(0,0,0,0.18);
+}
+.tshelf-case {
+  --case-in: color-mix(in srgb, var(--shelf-color) 9%, var(--surface));
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  padding: 0.4rem 0.2rem 0;
+  background: var(--case-in);
+  border-left: 10px solid var(--plank-2); border-right: 10px solid var(--plank-2);
+  box-shadow: inset 0 14px 16px -12px rgba(168,93,118,0.25), inset 8px 0 10px -8px rgba(0,0,0,0.18), inset -8px 0 10px -8px rgba(0,0,0,0.18);
+}
+.tshelf-slot { padding: 1.5rem 0.75rem 0.85rem; }
+.tshelf-slot::after {
+  height: 0.85rem;
+  background: linear-gradient(180deg, var(--plank-1), var(--plank-2) 60%, var(--plank-3));
+  border-top: 0;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.2), 0 6px 8px -4px rgba(0,0,0,0.25);
+}
+.tshelf-empty { color: var(--ink-soft); padding: 1.5rem 0.5rem 0; }
+
+/* cloth-bound cover */
+.book-cover-cloth {
+  --cloth: var(--rose-deep);
+  aspect-ratio: 2 / 3;
+  background: linear-gradient(135deg, rgba(255,255,255,0.10), rgba(0,0,0,0.08)), var(--cloth);
+  color: #FFF8F0;
+  border-radius: 4px 11px 11px 4px;
+  padding: 2.35rem 0.9rem 0.95rem 1.5rem;
+  gap: 0;
+  box-shadow:
+    inset 5px 0 0 rgba(0,0,0,0.14),
+    inset -6px 0 10px -6px rgba(0,0,0,0.28),
+    0 8px 12px -4px rgba(59,38,53,0.35);
+}
+.book-cover-cloth::before {              /* gilded bands near the top, like the spines */
+  content: ''; position: absolute; top: 0.95rem; left: 0; right: 0; width: auto; height: 7px;
+  border-radius: 0;
+  border-top: 1px solid rgba(255,248,235,0.7); border-bottom: 1px solid rgba(255,248,235,0.7);
+  background: none; opacity: 0.8;
+}
+.book-cover-cloth::after {               /* the hinge groove */
+  content: ''; position: absolute; top: 0; bottom: 0; left: 0.75rem; width: 2px;
+  background: rgba(255,248,235,0.28); pointer-events: none;
+}
+.book-cover-cloth:hover,
+.book-cover-cloth:focus-visible { transform: translateY(-5px); outline: none; }
+.book-cover-cloth .book-rating {
+  background: none; padding: 0; border-radius: 0;
+  color: #F6E2B6; font-size: 0.58rem; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase;
+}
+.book-cover-cloth .book-title {
+  margin-top: 0.5rem; font-size: 1.02rem; line-height: 1.22;
+  -webkit-line-clamp: 4; text-shadow: 0 1px 0 rgba(0,0,0,0.15);
+}
+.book-cover-cloth .book-byline { opacity: 0.85; font-size: 0.72rem; }
+.book-cover-cloth .book-meta { opacity: 0.7; font-size: 0.66rem; margin-top: 0.2rem; }
+@media (prefers-color-scheme: dark) {
+  .book-cover-cloth { filter: saturate(0.85) brightness(0.92); }
+}
+
+/* phones: two roomy columns */
+@media (max-width: 520px) {
+  .tshelf-stage { padding: 1rem 0.75rem 1.5rem; border-radius: 18px; }
+  .tshelf-case { grid-template-columns: repeat(2, minmax(0, 1fr)); border-left-width: 7px; border-right-width: 7px; }
+  .tshelf-slot { padding: 1.25rem 0.6rem 0.85rem; }
+  .book-cover-cloth { padding: 2.2rem 0.7rem 0.8rem 1.3rem; }
+  .book-cover-cloth .book-title { font-size: 0.92rem; }
+}
