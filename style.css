@@ -1682,3 +1682,20 @@ dialog h2 {
 }
 .spine:hover { transform: translateY(-5px); }
 .spine.active { transform: translateY(-16px); }
+
+/* ---- Surprise me ---- */
+.surprise-row { display: flex; justify-content: center; margin: 0.25rem 0 1rem; }
+.btn-surprise {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--rose-deep);
+  background: var(--surface);
+  border: 1px solid var(--rose-deep);
+  border-radius: 999px;
+  padding: 0.55rem 1.2rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.btn-surprise:hover,
+.btn-surprise:focus-visible { background: var(--rose-deep); color: var(--surface); outline: none; }

@@ -1672,6 +1672,24 @@
     searchTimer = setTimeout(render, 150);
   });
 
+  // ---- Surprise me: random pick from whatever your filters currently show ----
+  let lastSurpriseId = null;
+  document.getElementById('surpriseBtn').addEventListener('click', () => {
+    const query = searchInput.value.trim().toLowerCase();
+    const pool = entries.filter(e => matchesFilters(e, query));
+    if (!pool.length) {
+      showToast(entries.length ? 'Nothing matches your filters' : 'File a fic first');
+      return;
+    }
+    const choices = pool.length > 1 ? pool.filter(e => e.id !== lastSurpriseId) : pool;
+    const pick = choices[Math.floor(Math.random() * choices.length)];
+    lastSurpriseId = pick.id;
+    pinnedId = pick.id; // pinned to the top until you search/sort/filter again
+    render();
+    window.scrollTo({ top: Math.max(0, grid.getBoundingClientRect().top + window.scrollY - 90), behavior: 'smooth' });
+    showToast(`How about "${pick.title}"?`);
+  });
+
   sortSelect.addEventListener('change', () => {
     pinnedId = null;
     sortBy = sortSelect.value;
