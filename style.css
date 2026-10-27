@@ -1752,7 +1752,7 @@ dialog[open]::backdrop { animation: backdrop-in 0.3s ease; }
 /* ---- Up next ---- */
 .up-next {
   margin: 0 0 1.75rem;
-  padding: 0.9rem 1rem 1.1rem;
+  padding: 0.7rem 1rem;
   border: 1.5px dashed var(--rose);
   border-radius: 18px;
   background: color-mix(in srgb, var(--surface) 70%, transparent);
@@ -1760,10 +1760,24 @@ dialog[open]::backdrop { animation: backdrop-in 0.3s ease; }
 .up-next[hidden] { display: none; }
 .up-next-head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0.6rem;
-  margin-bottom: 0.75rem;
+  cursor: pointer;
+  list-style: none;
 }
+.up-next-head::-webkit-details-marker { display: none; }
+.up-next-head::after {
+  content: "";
+  margin-left: auto;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-right: 2px solid var(--rose-deep);
+  border-bottom: 2px solid var(--rose-deep);
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform 0.15s;
+}
+.up-next-collapse[open] > .up-next-head::after { transform: rotate(-135deg); }
+.up-next-body { padding-top: 0.85rem; }
 .up-next-head h2 {
   margin: 0;
   font-family: var(--font-display);

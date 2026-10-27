@@ -238,6 +238,11 @@
   const upNextGrid = document.getElementById('upNextGrid');
   const upNextCount = document.getElementById('upNextCount');
   const upNextHint = document.getElementById('upNextHint');
+  const upNextDetails = document.getElementById('upNextDetails');
+  try { upNextDetails.open = localStorage.getItem('tbr-stacks-upnext-open') === '1'; } catch (e) {}
+  upNextDetails.addEventListener('toggle', () => {
+    try { localStorage.setItem('tbr-stacks-upnext-open', upNextDetails.open ? '1' : '0'); } catch (e) {}
+  });
   const entryCount = document.getElementById('entryCount');
   const tagRail = document.getElementById('tagRail');
   const searchInput = document.getElementById('searchInput');

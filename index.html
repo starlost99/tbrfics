@@ -135,12 +135,16 @@
 
   <div id="catalogView">
     <section id="upNextSection" class="up-next" aria-label="Up next">
-      <div class="up-next-head">
-        <h2>Up next</h2>
-        <span class="up-next-count" id="upNextCount"></span>
-      </div>
-      <p class="up-next-hint" id="upNextHint">Pin up to 3 fics with "＋ up next" on a card, and they'll wait for you here.</p>
-      <div id="upNextGrid" class="card-grid"></div>
+      <details class="up-next-collapse" id="upNextDetails">
+        <summary class="up-next-head">
+          <h2>Up next</h2>
+          <span class="up-next-count" id="upNextCount"></span>
+        </summary>
+        <div class="up-next-body">
+          <p class="up-next-hint" id="upNextHint">Pin up to 3 fics with "＋ up next" on a card, and they'll wait for you here.</p>
+          <div id="upNextGrid" class="card-grid"></div>
+        </div>
+      </details>
     </section>
 
     <section id="cardGrid" class="card-grid">
