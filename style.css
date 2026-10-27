@@ -1844,7 +1844,7 @@ dialog[open]::backdrop { animation: backdrop-in 0.3s ease; }
   margin-bottom: 1.75rem;
   background: var(--surface);
   border: 1.5px solid var(--ink);
-  border-radius: 0 var(--drawer-radius) var(--drawer-radius) var(--drawer-radius);
+  border-radius: var(--drawer-radius);
   box-shadow: 3px 3px 0 var(--rule);
 }
 
